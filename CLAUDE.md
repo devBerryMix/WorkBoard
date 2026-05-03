@@ -65,6 +65,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 오늘 근무 상태 표시
 - 이번 달 근무 요약 표시
 
+### 로그인 기능
+- 현재는 mock data 기반 로그인으로 구현한다.
+- 실제 Node.js + Oracle API는 아직 연결하지 않는다.
+- 로그인 로직은 `authService` 레이어로 분리한다.
+- 나중에 실제 API 로그인으로 교체하기 쉽도록 화면과 서비스 로직을 분리한다.
+- 로그인 성공 시 사용자 정보를 전역 상태(AuthContext)에 저장한다.
+- 로그인하지 않은 사용자는 메인 화면에 접근할 수 없다.
+- 로그인 실패 시 안내 메시지를 표시한다.
+- 로그아웃 기능을 제공한다.
+
 ### 근태 캘린더 화면
 - 월별 캘린더 형태
 - 팀원들의 휴가 사용 여부를 날짜별로 표시 (승인된 휴가만)
@@ -80,6 +90,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 신청 버튼
 - 신청 완료 시 Alert 표시
 - 실제 저장은 mock 처리
+- 시작일/종료일 입력 영역 오른쪽에 달력 아이콘 표시
+- 달력 아이콘 탭 시 DateTimePicker 팝업으로 날짜 선택 (`@react-native-community/datetimepicker`)
+  - iOS: 하단 Modal + spinner 형태 + 취소/확인 버튼
+  - Android: 네이티브 캘린더 다이얼로그 팝업 (선택 후 자동 닫힘)
+  - Web: TextInput 폴백 (숫자 입력 시 YYYY-MM-DD 자동 포맷)
+- 날짜 유효성 검사
+  - 시작일은 종료일보다 늦을 수 없음
+  - 종료일은 시작일보다 빠를 수 없음
+  - 종료일 picker의 최솟값은 선택된 시작일로 설정
+  - 시작일 변경 시 종료일이 더 이르면 종료일 자동 초기화
+  - 직접 입력(Web) 시에도 동일한 유효성 검사 적용
+  - 잘못된 날짜 입력/선택 시 Alert로 안내
 - 시작일/종료일 입력 영역 오른쪽에 달력 아이콘 표시
 - 달력 아이콘 탭 시 DateTimePicker 팝업으로 날짜 선택 (`@react-native-community/datetimepicker`)
   - iOS: 하단 Modal + spinner 형태 + 취소/확인 버튼

@@ -1,7 +1,11 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/src/contexts/AuthContext';
 
 export default function TabLayout() {
+  const { user } = useAuth();
+  const isL4 = user?.position === 'L4';
+
   return (
     <Tabs
       screenOptions={{
@@ -37,6 +41,20 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* L4 only: leave approval tab */}
+      <Tabs.Protected guard={isL4}>
+        <Tabs.Screen
+          name="approve"
+          options={{
+            title: '승인',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="checkmark-circle-outline" size={size} color={color} />
+            ),
+          }}
+        />
+      </Tabs.Protected>
+
       <Tabs.Screen
         name="profile"
         options={{

@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUser } from '@/src/services/userService';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { getLeaveRequests, getUsedLeaveDays } from '@/src/services/leaveService';
 import { LeaveRequest } from '@/src/types';
 import { formatDateKo } from '@/src/utils/dateUtils';
@@ -29,19 +29,22 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 type InfoRow = { icon: string; label: string; value: string };
 
 export default function ProfileScreen() {
-  const user = getUser();
-  const [usedDays, setUsedDays] = useState(() => getUsedLeaveDays());
+  const { user, logout } = useAuth();
+  const [usedDays, setUsedDays] = useState(() => user ? getUsedLeaveDays(user.id) : 0);
   const [recentRequests, setRecentRequests] = useState<LeaveRequest[]>(() =>
-    getLeaveRequests().slice(-3).reverse()
+    user ? getLeaveRequests(user.id).slice(-3).reverse() : []
   );
 
   // Refresh on every tab focus so newly submitted requests appear immediately
   useFocusEffect(
     useCallback(() => {
-      setUsedDays(getUsedLeaveDays());
-      setRecentRequests(getLeaveRequests().slice(-3).reverse());
-    }, [])
+      if (!user) return;
+      setUsedDays(getUsedLeaveDays(user.id));
+      setRecentRequests(getLeaveRequests(user.id).slice(-3).reverse());
+    }, [user])
   );
+
+  if (!user) return null;
 
   const remaining = user.totalLeaves - usedDays;
 
@@ -150,6 +153,21 @@ export default function ProfileScreen() {
               })
             )}
           </View>
+
+          {/* Logout */}
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            activeOpacity={0.8}
+            onPress={() =>
+              Alert.alert('로그아웃', '로그아웃 하시겠습니까?', [
+                { text: '취소', style: 'cancel' },
+                { text: '로그아웃', style: 'destructive', onPress: logout },
+              ])
+            }
+          >
+            <Ionicons name="log-out-outline" size={18} color="#EF4444" />
+            <Text style={styles.logoutText}>로그아웃</Text>
+          </TouchableOpacity>
 
         </View>
       </ScrollView>
@@ -342,5 +360,22 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 12,
+    paddingVertical: 14,
+    marginBottom: 12,
+    backgroundColor: '#FFF5F5',
+  },
+  logoutText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#EF4444',
   },
 });

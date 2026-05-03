@@ -1,14 +1,18 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getUser } from '@/src/services/userService';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { getTodayAttendance, getMonthlySummary } from '@/src/services/attendanceService';
+import { getUsedLeaveDays } from '@/src/services/leaveService';
 import { formatDateKo, getTodayString, getYearMonth } from '@/src/utils/dateUtils';
 import StatusBadge from '@/src/components/StatusBadge';
 
 export default function HomeScreen() {
-  const user = getUser();
+  const { user } = useAuth();
+  if (!user) return null;
+
   const todayRecord = getTodayAttendance();
-  const remainingLeaves = user.totalLeaves - user.usedLeaves;
+  const usedLeaves = getUsedLeaveDays(user.id);
+  const remainingLeaves = user.totalLeaves - usedLeaves;
   const { year, month } = getYearMonth();
   const summary = getMonthlySummary(year, month);
 
@@ -73,7 +77,7 @@ export default function HomeScreen() {
               <Text style={styles.leaveUnit}>일</Text>
             </Text>
             <Text style={styles.leaveDetail}>
-              총 {user.totalLeaves}일 중 {user.usedLeaves}일 사용
+              총 {user.totalLeaves}일 중 {usedLeaves}일 사용
             </Text>
           </View>
 

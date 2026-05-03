@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { submitLeave, getLeaveRequests, getUsedLeaveDays } from '@/src/services/leaveService';
-import { getUser } from '@/src/services/userService';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { LeaveRequest } from '@/src/types';
 import { formatDateKo } from '@/src/utils/dateUtils';
 
@@ -62,15 +62,17 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 export default function LeaveScreen() {
-  const user = getUser();
+  const { user } = useAuth();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
-  const [requests, setRequests] = useState<LeaveRequest[]>(() => getLeaveRequests());
-  const [usedDays, setUsedDays] = useState(() => getUsedLeaveDays());
+  const [requests, setRequests] = useState<LeaveRequest[]>(() => user ? getLeaveRequests(user.id) : []);
+  const [usedDays, setUsedDays] = useState(() => user ? getUsedLeaveDays(user.id) : 0);
 
   const [activePicker, setActivePicker] = useState<PickerTarget>(null);
   const [tempDate, setTempDate] = useState<Date>(new Date());
+
+  if (!user) return null;
 
   const previewDays = calcDays(startDate, endDate);
   const remaining = user.totalLeaves - usedDays;
@@ -148,9 +150,9 @@ export default function LeaveScreen() {
       return;
     }
 
-    submitLeave(startDate, endDate, reason.trim());
-    setRequests(getLeaveRequests());
-    setUsedDays(getUsedLeaveDays());
+    submitLeave(startDate, endDate, reason.trim(), user.id);
+    setRequests(getLeaveRequests(user.id));
+    setUsedDays(getUsedLeaveDays(user.id));
     setStartDate('');
     setEndDate('');
     setReason('');

@@ -38,6 +38,15 @@ export function getUsedLeaveDays(userId: string = '1'): number {
     }, 0);
 }
 
+export function getPendingLeaveRequests(): LeaveRequest[] {
+  return leaveRequests.filter(r => r.status === 'pending');
+}
+
+export function processLeave(id: string, action: 'approved' | 'rejected'): void {
+  const req = leaveRequests.find(r => r.id === id);
+  if (req) req.status = action;
+}
+
 // Returns a map of dateStr -> team members on approved leave
 export function getTeamLeaveSummaryByMonth(
   year: number,
