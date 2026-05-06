@@ -1,16 +1,25 @@
-import { mockAccounts } from '@/src/data/mockAccounts';
-import { mockUsers } from '@/src/data/user';
 import { User } from '@/src/types';
+import { API_CONFIG, fetchAPI } from '@/src/config/api';
 
-// TODO: Replace mock validation with real API call when Node.js + Oracle backend is ready
+// Login via backend API
 export async function login(email: string, password: string): Promise<User> {
-  const account = mockAccounts.find(
-    (a) => a.email === email && a.password === password
-  );
-  if (!account) throw new Error('INVALID_CREDENTIALS');
+  try {
+    const response = await fetchAPI(API_CONFIG.ENDPOINTS.AUTH.LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
 
-  const user = mockUsers.find((u) => u.id === account.userId);
-  if (!user) throw new Error('USER_NOT_FOUND');
+    const data = await response.json();
 
-  return user;
+    if (!data.success) {
+      throw new Error('LOGIN_FAILED');
+    }
+
+    return data.user as User;
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Invalid email or password') {
+      throw new Error('INVALID_CREDENTIALS');
+    }
+    throw error;
+  }
 }

@@ -9,9 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { submitLeave, getLeaveRequests, getUsedLeaveDays } from '@/src/services/leaveService';
@@ -66,11 +68,63 @@ export default function LeaveScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
-  const [requests, setRequests] = useState<LeaveRequest[]>(() => user ? getLeaveRequests(user.id) : []);
-  const [usedDays, setUsedDays] = useState(() => user ? getUsedLeaveDays(user.id) : 0);
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
+  const [usedDays, setUsedDays] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [activePicker, setActivePicker] = useState<PickerTarget>(null);
   const [tempDate, setTempDate] = useState<Date>(new Date());
+
+  const startDateInputRef = useRef<any>(null);
+  const endDateInputRef = useRef<any>(null);
+
+  // Set web input type to date and add min constraint
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const setInputType = () => {
+        const inputs = document.querySelectorAll('input[placeholder="YYYY-MM-DD"]') as NodeListOf<HTMLInputElement>;
+        inputs.forEach((input, index) => {
+          if (input.type !== 'date') {
+            input.type = 'date';
+          }
+          // Set min date for end date input (index 1)
+          if (index === 1 && startDate) {
+            input.min = startDate;
+          }
+        });
+      };
+      setInputType();
+      const timer = setTimeout(setInputType, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [startDate, endDate]);
+
+  // Load leave data on mount and refresh on tab focus
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      (async () => {
+        try {
+          const reqs = await getLeaveRequests(user.id);
+          const used = getUsedLeaveDays(reqs);
+          setRequests(reqs);
+          setUsedDays(used);
+        } catch (error) {
+          console.error('Failed to load leave requests:', error);
+          setRequests([]);
+          setUsedDays(0);
+        } finally {
+          setLoading(false);
+        }
+      })();
+    }, [user])
+  );
 
   if (!user) return null;
 
@@ -130,7 +184,21 @@ export default function LeaveScreen() {
     setEndDate(formatted);
   };
 
-  const handleSubmit = () => {
+  // Web date input native onChange handler
+  const handleDateChange = (target: 'start' | 'end', value: string) => {
+    if (target === 'start') {
+      setStartDate(value);
+      if (endDate && endDate < value) setEndDate('');
+    } else {
+      if (startDate.length === 10 && value < startDate) {
+        Alert.alert('날짜 오류', '종료일은 시작일보다 빠를 수 없습니다.');
+        return;
+      }
+      setEndDate(value);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!startDate || !endDate || !reason.trim()) {
       Alert.alert('입력 오류', '모든 항목을 입력해주세요.');
       return;
@@ -150,13 +218,23 @@ export default function LeaveScreen() {
       return;
     }
 
-    submitLeave(startDate, endDate, reason.trim(), user.id);
-    setRequests(getLeaveRequests(user.id));
-    setUsedDays(getUsedLeaveDays(user.id));
-    setStartDate('');
-    setEndDate('');
-    setReason('');
-    Alert.alert('신청 완료', '연차 신청이 완료되었습니다.\n승인 후 캘린더에서 확인하실 수 있습니다.');
+    setSubmitting(true);
+    try {
+      await submitLeave(startDate, endDate, reason.trim(), user.id);
+      const reqs = await getLeaveRequests(user.id);
+      const used = getUsedLeaveDays(reqs);
+      setRequests(reqs);
+      setUsedDays(used);
+      setStartDate('');
+      setEndDate('');
+      setReason('');
+      Alert.alert('신청 완료', '연차 신청이 완료되었습니다.\n승인 후 캘린더에서 확인하실 수 있습니다.');
+    } catch (error) {
+      console.error('Failed to submit leave:', error);
+      Alert.alert('신청 실패', '연차 신청 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Date field: native picker button (iOS/Android) or TextInput (Web)
@@ -166,15 +244,16 @@ export default function LeaveScreen() {
       {Platform.OS === 'web' ? (
         <View style={styles.inputWrapper}>
           <TextInput
+            ref={target === 'start' ? startDateInputRef : endDateInputRef}
             style={styles.dateInput}
             value={value}
             onChangeText={target === 'start' ? handleStartTextChange : handleEndTextChange}
+            onChange={(e: any) => handleDateChange(target, e.target?.value || '')}
             placeholder="YYYY-MM-DD"
             placeholderTextColor="#D1D5DB"
             keyboardType="numeric"
             maxLength={10}
           />
-          <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
         </View>
       ) : (
         <TouchableOpacity
@@ -465,9 +544,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 10,
-    paddingHorizontal: 12,
+    paddingLeft: 12,
+    paddingRight: 20,
     height: 44,
     backgroundColor: '#F9FAFB',
+    overflow: 'hidden',
   },
   arrowIcon: {
     marginBottom: 10,
@@ -488,7 +569,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: '#111827',
-    marginRight: 6,
+    marginRight: 8,
   },
 
   dayHint: {

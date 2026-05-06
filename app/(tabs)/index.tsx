@@ -1,20 +1,38 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/src/contexts/AuthContext';
 import { getTodayAttendance, getMonthlySummary } from '@/src/services/attendanceService';
-import { getUsedLeaveDays } from '@/src/services/leaveService';
+import { getUsedLeaveDays, getLeaveRequests } from '@/src/services/leaveService';
 import { formatDateKo, getTodayString, getYearMonth } from '@/src/utils/dateUtils';
 import StatusBadge from '@/src/components/StatusBadge';
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const [usedLeaves, setUsedLeaves] = useState(0);
+
+  // Load leave data on mount and when user changes
+  useEffect(() => {
+    if (!user) return;
+
+    (async () => {
+      try {
+        const leaves = await getLeaveRequests(user.id);
+        const used = getUsedLeaveDays(leaves);
+        setUsedLeaves(used);
+      } catch (error) {
+        console.error('Failed to load leave data:', error);
+        setUsedLeaves(0);
+      }
+    })();
+  }, [user]);
+
   if (!user) return null;
 
   const todayRecord = getTodayAttendance();
-  const usedLeaves = getUsedLeaveDays(user.id);
   const remainingLeaves = user.totalLeaves - usedLeaves;
   const { year, month } = getYearMonth();
-  const summary = getMonthlySummary(year, month);
+  const monthlySummary = getMonthlySummary(year, month);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -53,17 +71,17 @@ export default function HomeScreen() {
             <Text style={styles.cardLabel}>{month}월 근무 요약</Text>
             <View style={styles.summaryRow}>
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#16A34A' }]}>{summary.presentDays}</Text>
+                <Text style={[styles.summaryValue, { color: '#16A34A' }]}>{monthlySummary.presentDays}</Text>
                 <Text style={styles.summaryLabel}>출근</Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#DC2626' }]}>{summary.absentDays}</Text>
+                <Text style={[styles.summaryValue, { color: '#DC2626' }]}>{monthlySummary.absentDays}</Text>
                 <Text style={styles.summaryLabel}>결근</Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#7C3AED' }]}>{summary.leaveDays}</Text>
+                <Text style={[styles.summaryValue, { color: '#7C3AED' }]}>{monthlySummary.leaveDays}</Text>
                 <Text style={styles.summaryLabel}>휴가</Text>
               </View>
             </View>

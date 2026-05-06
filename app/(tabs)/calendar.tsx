@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { getTeamLeaveSummaryByMonth } from '@/src/services/leaveService';
 import { TeamLeaveMember } from '@/src/types';
@@ -20,8 +20,24 @@ export default function CalendarScreen() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState(today);
+  const [leaveMap, setLeaveMap] = useState<Record<string, TeamLeaveMember[]>>({});
+  const [loading, setLoading] = useState(true);
 
-  const leaveMap = getTeamLeaveSummaryByMonth(year, month);
+  // Load leave data when month changes
+  useEffect(() => {
+    setLoading(true);
+    (async () => {
+      try {
+        const map = await getTeamLeaveSummaryByMonth(year, month);
+        setLeaveMap(map);
+      } catch (error) {
+        console.error('Failed to fetch team leave summary:', error);
+        setLeaveMap({});
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [year, month]);
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);

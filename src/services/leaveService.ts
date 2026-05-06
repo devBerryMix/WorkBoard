@@ -1,35 +1,49 @@
 import { LeaveRequest, TeamLeaveMember } from '@/src/types';
-import { mockLeaveRequests } from '@/src/data/leaves';
-import { mockUsers } from '@/src/data/user';
+import { API_CONFIG, fetchAPI } from '@/src/config/api';
 
-const leaveRequests: LeaveRequest[] = [...mockLeaveRequests];
+// Get user's leave requests from backend API
+export async function getLeaveRequests(userId: string = '1'): Promise<LeaveRequest[]> {
+  try {
+    const response = await fetchAPI(API_CONFIG.ENDPOINTS.LEAVES.GET_USER_LEAVES(userId), {
+      method: 'GET',
+    });
 
-export function getLeaveRequests(userId: string = '1'): LeaveRequest[] {
-  return leaveRequests.filter(r => r.userId === userId);
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch leave requests:', error);
+    throw new Error('FETCH_LEAVES_FAILED');
+  }
 }
 
-export function submitLeave(
+// Submit a new leave request to backend API
+export async function submitLeave(
   startDate: string,
   endDate: string,
   reason: string,
   userId: string = '1',
-): LeaveRequest {
-  const newRequest: LeaveRequest = {
-    id: String(Date.now()),
-    userId,
-    startDate,
-    endDate,
-    reason,
-    status: 'pending',
-    createdAt: new Date().toISOString().slice(0, 10),
-  };
-  leaveRequests.push(newRequest);
-  return newRequest;
+): Promise<LeaveRequest> {
+  try {
+    const response = await fetchAPI(API_CONFIG.ENDPOINTS.LEAVES.CREATE_LEAVE, {
+      method: 'POST',
+      body: JSON.stringify({
+        userId,
+        startDate,
+        endDate,
+        reason,
+      }),
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to submit leave request:', error);
+    throw new Error('SUBMIT_LEAVE_FAILED');
+  }
 }
 
-export function getUsedLeaveDays(userId: string = '1'): number {
+// Calculate used leave days from approved leave requests
+export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
   return leaveRequests
-    .filter(r => r.userId === userId && r.status === 'approved')
+    .filter(r => r.status === 'approved')
     .reduce((total, r) => {
       const start = new Date(`${r.startDate}T12:00:00`);
       const end = new Date(`${r.endDate}T12:00:00`);
@@ -38,48 +52,35 @@ export function getUsedLeaveDays(userId: string = '1'): number {
     }, 0);
 }
 
+// Get pending leave requests (for admin dashboard)
+// Note: Currently not implemented on backend - MVP only includes user leave requests
 export function getPendingLeaveRequests(): LeaveRequest[] {
-  return leaveRequests.filter(r => r.status === 'pending');
+  console.warn('getPendingLeaveRequests: Not yet implemented on backend');
+  return [];
 }
 
+// Process leave request (for admin dashboard)
+// Note: Currently not implemented on backend - MVP only includes user submission
 export function processLeave(id: string, action: 'approved' | 'rejected'): void {
-  const req = leaveRequests.find(r => r.id === id);
-  if (req) req.status = action;
+  console.warn('processLeave: Not yet implemented on backend');
 }
 
-// Returns a map of dateStr -> team members on approved leave
-export function getTeamLeaveSummaryByMonth(
+// Get team members on leave for a specific month from backend API
+export async function getTeamLeaveSummaryByMonth(
   year: number,
   month: number,
-): Record<string, TeamLeaveMember[]> {
-  const prefix = `${year}-${String(month).padStart(2, '0')}`;
-  const result: Record<string, TeamLeaveMember[]> = {};
+): Promise<Record<string, TeamLeaveMember[]>> {
+  try {
+    const response = await fetchAPI(
+      API_CONFIG.ENDPOINTS.LEAVES.GET_MONTH_LEAVES(year, month),
+      {
+        method: 'GET',
+      },
+    );
 
-  leaveRequests
-    .filter(r => r.status === 'approved')
-    .forEach(r => {
-      const start = new Date(`${r.startDate}T12:00:00`);
-      const end = new Date(`${r.endDate}T12:00:00`);
-
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const y = d.getFullYear();
-        const m = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        const dateStr = `${y}-${m}-${day}`;
-
-        if (!dateStr.startsWith(prefix)) continue;
-
-        const user = mockUsers.find(u => u.id === r.userId);
-        if (!user) continue;
-
-        if (!result[dateStr]) result[dateStr] = [];
-        result[dateStr].push({
-          userId: user.id,
-          name: user.name,
-          department: user.department,
-        });
-      }
-    });
-
-  return result;
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch team leave summary:', error);
+    throw new Error('FETCH_TEAM_LEAVES_FAILED');
+  }
 }

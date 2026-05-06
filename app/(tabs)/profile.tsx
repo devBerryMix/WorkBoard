@@ -30,17 +30,33 @@ type InfoRow = { icon: string; label: string; value: string };
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
-  const [usedDays, setUsedDays] = useState(() => user ? getUsedLeaveDays(user.id) : 0);
-  const [recentRequests, setRecentRequests] = useState<LeaveRequest[]>(() =>
-    user ? getLeaveRequests(user.id).slice(-3).reverse() : []
-  );
+  const [usedDays, setUsedDays] = useState<number>(0);
+  const [recentRequests, setRecentRequests] = useState<LeaveRequest[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Refresh on every tab focus so newly submitted requests appear immediately
+  // Load leave requests on mount and refresh on tab focus
   useFocusEffect(
     useCallback(() => {
-      if (!user) return;
-      setUsedDays(getUsedLeaveDays(user.id));
-      setRecentRequests(getLeaveRequests(user.id).slice(-3).reverse());
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      (async () => {
+        try {
+          const requests = await getLeaveRequests(user.id);
+          const used = getUsedLeaveDays(requests);
+          setUsedDays(used);
+          setRecentRequests(requests.slice(-3).reverse());
+        } catch (error) {
+          console.error('Failed to load leave requests:', error);
+          setRecentRequests([]);
+          setUsedDays(0);
+        } finally {
+          setLoading(false);
+        }
+      })();
     }, [user])
   );
 
