@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+﻿import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -71,17 +71,17 @@ export default function HomeScreen() {
             <Text style={styles.cardLabel}>{month}월 근무 요약</Text>
             <View style={styles.summaryRow}>
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#16A34A' }]}>{monthlySummary.presentDays}</Text>
+                <Text style={[styles.summaryValue, { color: '#1E7A3E' }]}>{monthlySummary.presentDays}</Text>
                 <Text style={styles.summaryLabel}>출근</Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#DC2626' }]}>{monthlySummary.absentDays}</Text>
+                <Text style={[styles.summaryValue, { color: '#B83030' }]}>{monthlySummary.absentDays}</Text>
                 <Text style={styles.summaryLabel}>결근</Text>
               </View>
               <View style={styles.divider} />
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#7C3AED' }]}>{monthlySummary.leaveDays}</Text>
+                <Text style={[styles.summaryValue, { color: '#6840B0' }]}>{monthlySummary.leaveDays}</Text>
                 <Text style={styles.summaryLabel}>휴가</Text>
               </View>
             </View>
@@ -108,37 +108,37 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
   },
   scroll: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8F4EE',
   },
   header: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 48,
   },
   greeting: {
     fontSize: 14,
-    color: '#BFDBFE',
+    color: '#A08040',
     marginBottom: 4,
   },
   userName: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5EDD8',
     marginBottom: 4,
   },
   department: {
     fontSize: 14,
-    color: '#93C5FD',
+    color: '#9A8878',
     marginBottom: 8,
   },
   date: {
     fontSize: 13,
-    color: '#BFDBFE',
+    color: '#A08040',
   },
   content: {
     paddingHorizontal: 16,
@@ -151,15 +151,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: '#1C150C',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
   cardLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#9A8A78',
     fontWeight: '500',
     marginBottom: 12,
   },
@@ -174,32 +174,32 @@ const styles = StyleSheet.create({
   },
   timeLabel: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#B0A090',
     marginBottom: 4,
   },
   timeValue: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1C1508',
   },
   divider: {
     width: 1,
     height: 36,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#EEE5D8',
   },
   leaveCount: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   leaveUnit: {
     fontSize: 20,
     fontWeight: '400',
-    color: '#6B7280',
+    color: '#7A6A58',
   },
   leaveDetail: {
     fontSize: 13,
-    color: '#9CA3AF',
+    color: '#9A8A78',
     marginTop: 4,
   },
   summaryRow: {
@@ -219,6 +219,6 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
   },
 });

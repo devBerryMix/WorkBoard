@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+﻿import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,9 +21,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  pending:  { bg: '#FEF3C7', text: '#D97706' },
-  approved: { bg: '#D1FAE5', text: '#059669' },
-  rejected: { bg: '#FEE2E2', text: '#DC2626' },
+  pending:  { bg: '#FEF5E0', text: '#A07820' },
+  approved: { bg: '#E8F5EC', text: '#1E7A3E' },
+  rejected: { bg: '#FCE8E8', text: '#B83030' },
 };
 
 type InfoRow = { icon: string; label: string; value: string };
@@ -98,7 +98,7 @@ export default function ProfileScreen() {
                 ]}
               >
                 <View style={styles.infoIconWrap}>
-                  <Ionicons name={row.icon as any} size={16} color="#2563EB" />
+                  <Ionicons name={row.icon as any} size={16} color="#C8A84E" />
                 </View>
                 <Text style={styles.infoLabel}>{row.label}</Text>
                 <Text style={styles.infoValue} numberOfLines={1}>{row.value}</Text>
@@ -181,7 +181,7 @@ export default function ProfileScreen() {
               ])
             }
           >
-            <Ionicons name="log-out-outline" size={18} color="#EF4444" />
+            <Ionicons name="log-out-outline" size={18} color="#B83030" />
             <Text style={styles.logoutText}>로그아웃</Text>
           </TouchableOpacity>
 
@@ -194,16 +194,16 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
   },
   scroll: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8F4EE',
   },
 
   // Header
   header: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
     alignItems: 'center',
     paddingTop: 28,
     paddingBottom: 44,
@@ -212,30 +212,30 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F5ECD8',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 6,
   },
   avatarText: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   userName: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5EDD8',
     marginBottom: 4,
   },
   userPosition: {
     fontSize: 14,
-    color: '#BFDBFE',
+    color: '#A08040',
     fontWeight: '500',
   },
 
@@ -253,13 +253,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
   cardLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#7A6A58',
     fontWeight: '500',
     marginBottom: 12,
   },
@@ -272,13 +272,13 @@ const styles = StyleSheet.create({
   },
   infoRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F9FAFB',
+    borderBottomColor: '#E4D8C8',
   },
   infoIconWrap: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#E4D8C8',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -286,14 +286,14 @@ const styles = StyleSheet.create({
   infoLabel: {
     width: 44,
     fontSize: 13,
-    color: '#9CA3AF',
+    color: '#B0A090',
     fontWeight: '500',
     marginRight: 12,
   },
   infoValue: {
     flex: 1,
     fontSize: 14,
-    color: '#111827',
+    color: '#1C1508',
     fontWeight: '500',
   },
 
@@ -310,30 +310,30 @@ const styles = StyleSheet.create({
   balanceDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#E4D8C8',
   },
   balanceNum: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 4,
   },
   usedNum: {
-    color: '#EF4444',
+    color: '#B83030',
   },
   remainingNum: {
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   balanceSub: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
     fontWeight: '500',
   },
 
   // Recent leave history
   emptyText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#9A8A78',
     textAlign: 'center',
     paddingVertical: 16,
   },
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   historyRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F9FAFB',
+    borderBottomColor: '#E4D8C8',
   },
   historyLeft: {
     flex: 1,
@@ -352,12 +352,12 @@ const styles = StyleSheet.create({
   historyDate: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 2,
   },
   historyReason: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
   },
   historyRight: {
     alignItems: 'flex-end',
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   historyDays: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: '#4A3C2E',
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -383,15 +383,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: '#F0C0C0',
     borderRadius: 12,
     paddingVertical: 14,
     marginBottom: 12,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: '#FCE8E8',
   },
   logoutText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#EF4444',
+    color: '#B83030',
   },
 });

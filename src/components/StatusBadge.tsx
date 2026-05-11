@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+﻿import { View, Text, StyleSheet } from 'react-native';
 import { AttendanceStatus } from '@/src/types';
 
 interface StatusBadgeProps {
@@ -6,13 +6,13 @@ interface StatusBadgeProps {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  present: { label: '출근', color: '#16A34A', bg: '#DCFCE7' },
-  absent:  { label: '결근', color: '#DC2626', bg: '#FEE2E2' },
-  leave:   { label: '휴가', color: '#7C3AED', bg: '#EDE9FE' },
-  holiday: { label: '공휴일', color: '#6B7280', bg: '#F3F4F6' },
+  present: { label: '출근', color: '#1E7A3E', bg: '#E8F5EC' },
+  absent:  { label: '결근', color: '#B83030', bg: '#FCE8E8' },
+  leave:   { label: '휴가', color: '#6840B0', bg: '#EDE8F8' },
+  holiday: { label: '공휴일', color: '#7A6A58', bg: '#E4D8C8' },
 };
 
-const DEFAULT_CONFIG = { label: '미출근', color: '#9CA3AF', bg: '#F3F4F6' };
+const DEFAULT_CONFIG = { label: '미출근', color: '#9A8A78', bg: '#FFFFFF' };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
   const config = status ? (STATUS_CONFIG[status] ?? DEFAULT_CONFIG) : DEFAULT_CONFIG;

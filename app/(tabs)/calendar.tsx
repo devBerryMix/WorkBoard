@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+﻿import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -81,11 +81,11 @@ export default function CalendarScreen() {
             {/* Month Navigation */}
             <View style={styles.monthNav}>
               <TouchableOpacity onPress={goToPrev} style={styles.navBtn}>
-                <Ionicons name="chevron-back" size={20} color="#374151" />
+                <Ionicons name="chevron-back" size={20} color="#D4C0A8" />
               </TouchableOpacity>
               <Text style={styles.monthTitle}>{formatMonthKo(year, month)}</Text>
               <TouchableOpacity onPress={goToNext} style={styles.navBtn}>
-                <Ionicons name="chevron-forward" size={20} color="#374151" />
+                <Ionicons name="chevron-forward" size={20} color="#D4C0A8" />
               </TouchableOpacity>
             </View>
 
@@ -191,14 +191,14 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
   },
   scroll: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8F4EE',
   },
   header: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 40,
@@ -206,12 +206,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5EDD8',
     marginBottom: 4,
   },
   headerSub: {
     fontSize: 13,
-    color: '#BFDBFE',
+    color: '#A08040',
   },
   content: {
     paddingHorizontal: 16,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -239,12 +239,12 @@ const styles = StyleSheet.create({
   navBtn: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#E4D8C8',
   },
   monthTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1C1508',
   },
   row: {
     flexDirection: 'row',
@@ -254,12 +254,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#7A6A58',
     paddingVertical: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#E4D8C8',
     marginBottom: 4,
   },
   cell: {
@@ -275,34 +275,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   todayCircle: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#C8A84E',
   },
   selectedCircle: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#E4D8C8',
   },
   dayNum: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#111827',
+    color: '#4A3C2E',
   },
   todayNum: {
-    color: '#FFFFFF',
+    color: '#1C150C',
     fontWeight: '700',
   },
   selectedNum: {
-    color: '#2563EB',
+    color: '#C8A84E',
     fontWeight: '700',
   },
   sundayText: {
-    color: '#DC2626',
+    color: '#B83030',
   },
   saturdayText: {
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   leaveCount: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#7C3AED',
+    color: '#6840B0',
     marginTop: 2,
   },
   leaveCountPlaceholder: {
@@ -311,13 +311,13 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#7A6A58',
     fontWeight: '500',
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#9A8A78',
     textAlign: 'center',
     paddingVertical: 16,
   },
@@ -326,13 +326,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F9FAFB',
+    borderBottomColor: '#E4D8C8',
   },
   avatar: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#E4D8C8',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   memberInfo: {
     flex: 1,
@@ -348,15 +348,15 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 2,
   },
   memberDept: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
   },
   leaveBadge: {
-    backgroundColor: '#EDE9FE',
+    backgroundColor: '#EDE8F8',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 100,
@@ -364,6 +364,6 @@ const styles = StyleSheet.create({
   leaveBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#7C3AED',
+    color: '#6840B0',
   },
 });

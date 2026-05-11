@@ -1,4 +1,4 @@
-import {
+﻿import {
   View,
   Text,
   TextInput,
@@ -64,7 +64,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={(t) => { setEmail(t); setError(''); }}
             placeholder="이메일 주소를 입력하세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#B0A090"
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
@@ -77,7 +77,7 @@ export default function LoginScreen() {
             value={password}
             onChangeText={(t) => { setPassword(t); setError(''); }}
             placeholder="비밀번호를 입력하세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor="#B0A090"
             secureTextEntry
             editable={!loading}
           />
@@ -93,7 +93,7 @@ export default function LoginScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color="#1C150C" />
             ) : (
               <Text style={styles.loginBtnText}>로그인</Text>
             )}
@@ -107,7 +107,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
   },
   inner: {
     flex: 1,
@@ -121,12 +121,12 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 36,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F5EDD8',
     letterSpacing: -0.5,
   },
   appSub: {
     fontSize: 14,
-    color: '#BFDBFE',
+    color: '#A08040',
     marginTop: 6,
     fontWeight: '500',
   },
@@ -134,53 +134,53 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: '#1C150C',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
   },
   cardTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 20,
   },
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#374151',
+    color: '#4A3C2E',
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E4D8C8',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    color: '#1C1508',
+    backgroundColor: '#F2EDE5',
   },
   errorText: {
     marginTop: 12,
     fontSize: 13,
-    color: '#DC2626',
+    color: '#B83030',
     textAlign: 'center',
   },
   loginBtn: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#C8A84E',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 24,
   },
   loginBtnDisabled: {
-    backgroundColor: '#93C5FD',
+    backgroundColor: '#D4C4A0',
   },
   loginBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#1C1508',
   },
 });

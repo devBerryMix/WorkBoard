@@ -1,4 +1,4 @@
-import {
+﻿import {
   View,
   Text,
   StyleSheet,
@@ -69,13 +69,13 @@ export default function ApproveScreen() {
         <View style={styles.content}>
 
           <View style={styles.badge}>
-            <Ionicons name="time-outline" size={14} color="#D97706" />
+            <Ionicons name="time-outline" size={14} color="#C8A84E" />
             <Text style={styles.badgeText}>대기 중 {pending.length}건</Text>
           </View>
 
           {pending.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Ionicons name="checkmark-circle-outline" size={48} color="#10B981" />
+              <Ionicons name="checkmark-circle-outline" size={48} color="#1E7A3E" />
               <Text style={styles.emptyTitle}>모두 처리되었습니다</Text>
               <Text style={styles.emptySub}>대기 중인 연차 신청이 없습니다</Text>
             </View>
@@ -105,11 +105,11 @@ export default function ApproveScreen() {
 
                   {/* Leave details */}
                   <View style={styles.detailRow}>
-                    <Ionicons name="calendar-outline" size={14} color="#6B7280" />
+                    <Ionicons name="calendar-outline" size={14} color="#7A6A58" />
                     <Text style={styles.detailText}>{dateLabel}</Text>
                   </View>
                   <View style={styles.detailRow}>
-                    <Ionicons name="document-text-outline" size={14} color="#6B7280" />
+                    <Ionicons name="document-text-outline" size={14} color="#7A6A58" />
                     <Text style={styles.detailText}>{req.reason}</Text>
                   </View>
                   <Text style={styles.createdAt}>신청일 {formatDateKo(req.createdAt)}</Text>
@@ -121,7 +121,7 @@ export default function ApproveScreen() {
                       activeOpacity={0.8}
                       onPress={() => handleAction(req.id, 'rejected')}
                     >
-                      <Ionicons name="close-circle-outline" size={16} color="#DC2626" />
+                      <Ionicons name="close-circle-outline" size={16} color="#B83030" />
                       <Text style={styles.rejectText}>반려</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -129,7 +129,7 @@ export default function ApproveScreen() {
                       activeOpacity={0.8}
                       onPress={() => handleAction(req.id, 'approved')}
                     >
-                      <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" />
+                      <Ionicons name="checkmark-circle-outline" size={16} color="#1C150C" />
                       <Text style={styles.approveText}>승인</Text>
                     </TouchableOpacity>
                   </View>
@@ -146,14 +146,14 @@ export default function ApproveScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
   },
   scroll: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8F4EE',
   },
   header: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 40,
@@ -161,12 +161,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5EDD8',
     marginBottom: 4,
   },
   headerSub: {
     fontSize: 13,
-    color: '#BFDBFE',
+    color: '#A08040',
   },
   content: {
     paddingHorizontal: 16,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#FEF5E0',
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#D97706',
+    color: '#C8A84E',
   },
   emptyCard: {
     backgroundColor: '#FFFFFF',
@@ -197,20 +197,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1C1508',
     marginTop: 16,
     marginBottom: 6,
   },
   emptySub: {
     fontSize: 13,
-    color: '#9CA3AF',
+    color: '#9A8A78',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#E4D8C8',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   applicantInfo: {
     flex: 1,
@@ -248,15 +248,15 @@ const styles = StyleSheet.create({
   applicantName: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 2,
   },
   applicantDept: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
   },
   daysBadge: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#E4D8C8',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 100,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   daysText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#A07820',
   },
   detailRow: {
     flexDirection: 'row',
@@ -274,12 +274,12 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 13,
-    color: '#374151',
+    color: '#4A3C2E',
     flex: 1,
   },
   createdAt: {
     fontSize: 11,
-    color: '#D1D5DB',
+    color: '#9A8A78',
     marginTop: 4,
     marginBottom: 14,
   },
@@ -294,15 +294,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: '#F0C0C0',
     borderRadius: 10,
     paddingVertical: 11,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: '#FCE8E8',
   },
   rejectText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#DC2626',
+    color: '#B83030',
   },
   approveBtn: {
     flex: 1,
@@ -310,13 +310,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#C8A84E',
     borderRadius: 10,
     paddingVertical: 11,
   },
   approveText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#1C150C',
   },
 });

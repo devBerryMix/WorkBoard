@@ -1,4 +1,4 @@
-import {
+﻿import {
   View,
   Text,
   StyleSheet,
@@ -58,9 +58,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  pending:  { bg: '#FEF3C7', text: '#D97706' },
-  approved: { bg: '#D1FAE5', text: '#059669' },
-  rejected: { bg: '#FEE2E2', text: '#DC2626' },
+  pending:  { bg: '#FEF5E0', text: '#A07820' },
+  approved: { bg: '#E8F5EC', text: '#1E7A3E' },
+  rejected: { bg: '#FCE8E8', text: '#B83030' },
 };
 
 export default function LeaveScreen() {
@@ -250,7 +250,7 @@ export default function LeaveScreen() {
             onChangeText={target === 'start' ? handleStartTextChange : handleEndTextChange}
             onChange={(e: any) => handleDateChange(target, e.target?.value || '')}
             placeholder="YYYY-MM-DD"
-            placeholderTextColor="#D1D5DB"
+            placeholderTextColor="#B0A090"
             keyboardType="numeric"
             maxLength={10}
           />
@@ -264,7 +264,7 @@ export default function LeaveScreen() {
           <Text style={[styles.dateDisplayText, !value && styles.datePlaceholder]}>
             {value || 'YYYY-MM-DD'}
           </Text>
-          <Ionicons name="calendar-outline" size={16} color="#9CA3AF" />
+          <Ionicons name="calendar-outline" size={16} color="#7A6A58" />
         </TouchableOpacity>
       )}
     </View>
@@ -317,14 +317,14 @@ export default function LeaveScreen() {
               {/* Date inputs */}
               <View style={styles.dateRow}>
                 {renderDateField('시작일', startDate, 'start')}
-                <Ionicons name="arrow-forward" size={16} color="#9CA3AF" style={styles.arrowIcon} />
+                <Ionicons name="arrow-forward" size={16} color="#9A8A78" style={styles.arrowIcon} />
                 {renderDateField('종료일', endDate, 'end')}
               </View>
 
               {/* Day count preview */}
               {previewDays !== null && (
                 <View style={styles.dayHint}>
-                  <Ionicons name="information-circle-outline" size={14} color="#2563EB" />
+                  <Ionicons name="information-circle-outline" size={14} color="#C8A84E" />
                   <Text style={styles.dayHintText}>총 {previewDays}일 신청</Text>
                 </View>
               )}
@@ -336,7 +336,7 @@ export default function LeaveScreen() {
                 value={reason}
                 onChangeText={setReason}
                 placeholder="휴가 사유를 입력해주세요"
-                placeholderTextColor="#D1D5DB"
+                placeholderTextColor="#B0A090"
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
@@ -344,7 +344,7 @@ export default function LeaveScreen() {
 
               {/* Submit */}
               <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.85}>
-                <Ionicons name="paper-plane-outline" size={18} color="#FFFFFF" />
+                <Ionicons name="paper-plane-outline" size={18} color="#1C1508" />
                 <Text style={styles.submitBtnText}>신청하기</Text>
               </TouchableOpacity>
             </View>
@@ -441,14 +441,14 @@ export default function LeaveScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
   },
   scroll: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8F4EE',
   },
   header: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 40,
@@ -456,12 +456,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#F5EDD8',
     marginBottom: 4,
   },
   headerSub: {
     fontSize: 13,
-    color: '#BFDBFE',
+    color: '#A08040',
   },
   content: {
     paddingHorizontal: 16,
@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
   cardLabel: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#7A6A58',
     fontWeight: '500',
     marginBottom: 12,
   },
@@ -500,23 +500,23 @@ const styles = StyleSheet.create({
   balanceDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#E4D8C8',
   },
   balanceNum: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 4,
   },
   usedNum: {
-    color: '#EF4444',
+    color: '#B83030',
   },
   remainingNum: {
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   balanceSub: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
     fontWeight: '500',
   },
 
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: '#4A3C2E',
     marginBottom: 6,
   },
   reasonLabel: {
@@ -542,12 +542,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E4D8C8',
     borderRadius: 10,
     paddingLeft: 12,
     paddingRight: 20,
     height: 44,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#F2EDE5',
     overflow: 'hidden',
   },
   arrowIcon: {
@@ -558,17 +558,17 @@ const styles = StyleSheet.create({
   dateDisplayText: {
     flex: 1,
     fontSize: 14,
-    color: '#111827',
+    color: '#1C1508',
   },
   datePlaceholder: {
-    color: '#D1D5DB',
+    color: '#9A8A78',
   },
 
   // Web TextInput
   dateInput: {
     flex: 1,
     fontSize: 14,
-    color: '#111827',
+    color: '#1C1508',
     marginRight: 8,
   },
 
@@ -580,24 +580,24 @@ const styles = StyleSheet.create({
   },
   dayHintText: {
     fontSize: 13,
-    color: '#2563EB',
+    color: '#C8A84E',
     fontWeight: '600',
   },
   reasonInput: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#E4D8C8',
     borderRadius: 10,
     padding: 12,
     fontSize: 14,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    color: '#1C1508',
+    backgroundColor: '#F2EDE5',
     minHeight: 90,
   },
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563EB',
+    backgroundColor: '#C8A84E',
     borderRadius: 12,
     paddingVertical: 14,
     marginTop: 20,
@@ -606,13 +606,13 @@ const styles = StyleSheet.create({
   submitBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#1C150C',
   },
 
   // History
   emptyText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: '#9A8A78',
     textAlign: 'center',
     paddingVertical: 16,
   },
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F9FAFB',
+    borderBottomColor: '#E4D8C8',
   },
   historyLeft: {
     flex: 1,
@@ -629,12 +629,12 @@ const styles = StyleSheet.create({
   historyDate: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1C1508',
     marginBottom: 2,
   },
   historyReason: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#9A8A78',
   },
   historyRight: {
     alignItems: 'flex-end',
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   historyDays: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
+    color: '#4A3C2E',
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -666,10 +666,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   modalSheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FDFAF6',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 34,
@@ -681,21 +681,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#E4D8C8',
   },
   modalCancel: {
     fontSize: 16,
-    color: '#6B7280',
+    color: '#7A6A58',
   },
   modalTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#111827',
+    color: '#1C1508',
   },
   modalConfirm: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#C8A84E',
   },
   iosPicker: {
     height: 200,
