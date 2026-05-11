@@ -1,13 +1,13 @@
 import { LeaveRequest, TeamLeaveMember } from '@/src/types';
 import { API_CONFIG, fetchAPI } from '@/src/config/api';
 
-// Get user's leave requests from backend API
-export async function getLeaveRequests(userId: string = '1'): Promise<LeaveRequest[]> {
+// 본인 연차 조회 — userId 한 개만 필요 (requesterId = userId)
+export async function getLeaveRequests(userId: string): Promise<LeaveRequest[]> {
   try {
-    const response = await fetchAPI(API_CONFIG.ENDPOINTS.LEAVES.GET_USER_LEAVES(userId), {
-      method: 'GET',
-    });
-
+    const response = await fetchAPI(
+      API_CONFIG.ENDPOINTS.LEAVES.GET_USER_LEAVES(userId),
+      { method: 'GET' },
+    );
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch leave requests:', error);
@@ -15,24 +15,18 @@ export async function getLeaveRequests(userId: string = '1'): Promise<LeaveReque
   }
 }
 
-// Submit a new leave request to backend API
+// 연차 신청 — 본인만 가능 (requesterId = userId)
 export async function submitLeave(
   startDate: string,
   endDate: string,
   reason: string,
-  userId: string = '1',
+  userId: string,
 ): Promise<LeaveRequest> {
   try {
     const response = await fetchAPI(API_CONFIG.ENDPOINTS.LEAVES.CREATE_LEAVE, {
       method: 'POST',
-      body: JSON.stringify({
-        userId,
-        startDate,
-        endDate,
-        reason,
-      }),
+      body: JSON.stringify({ requesterId: userId, userId, startDate, endDate, reason }),
     });
-
     return await response.json();
   } catch (error) {
     console.error('Failed to submit leave request:', error);
@@ -40,7 +34,6 @@ export async function submitLeave(
   }
 }
 
-// Calculate used leave days from approved leave requests
 export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
   return leaveRequests
     .filter(r => r.status === 'approved')
@@ -52,32 +45,17 @@ export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
     }, 0);
 }
 
-// Get pending leave requests (for admin dashboard)
-// Note: Currently not implemented on backend - MVP only includes user leave requests
-export function getPendingLeaveRequests(): LeaveRequest[] {
-  console.warn('getPendingLeaveRequests: Not yet implemented on backend');
-  return [];
-}
-
-// Process leave request (for admin dashboard)
-// Note: Currently not implemented on backend - MVP only includes user submission
-export function processLeave(id: string, action: 'approved' | 'rejected'): void {
-  console.warn('processLeave: Not yet implemented on backend');
-}
-
-// Get team members on leave for a specific month from backend API
+// 팀 달력용 — 같은 부서 연차 조회 (callerId로 부서 판별)
 export async function getTeamLeaveSummaryByMonth(
   year: number,
   month: number,
+  callerId: string,
 ): Promise<Record<string, TeamLeaveMember[]>> {
   try {
     const response = await fetchAPI(
-      API_CONFIG.ENDPOINTS.LEAVES.GET_MONTH_LEAVES(year, month),
-      {
-        method: 'GET',
-      },
+      API_CONFIG.ENDPOINTS.LEAVES.GET_MONTH_LEAVES(year, month, callerId),
+      { method: 'GET' },
     );
-
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch team leave summary:', error);

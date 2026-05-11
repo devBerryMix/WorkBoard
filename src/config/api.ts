@@ -16,14 +16,18 @@ export const API_CONFIG = {
       LOGIN: `${API_BASE_URL}/api/auth/login`,
     },
     USERS: {
-      GET_USER: (userId: string) => `${API_BASE_URL}/api/users/${userId}`,
-      LIST_ALL: `${API_BASE_URL}/api/users`,
+      GET_USER: (userId: string, callerId: string) =>
+        `${API_BASE_URL}/api/users/${userId}?requesterId=${callerId}`,
+      LIST_ALL: (callerId: string) =>
+        `${API_BASE_URL}/api/users?requesterId=${callerId}`,
     },
     LEAVES: {
-      GET_ALL: `${API_BASE_URL}/api/leaves`,
-      GET_USER_LEAVES: (userId: string) => `${API_BASE_URL}/api/leaves/user/${userId}`,
-      GET_MONTH_LEAVES: (year: number, month: number) =>
-        `${API_BASE_URL}/api/leaves/month/${year}/${String(month).padStart(2, '0')}`,
+      GET_ALL: (callerId: string) =>
+        `${API_BASE_URL}/api/leaves?requesterId=${callerId}`,
+      GET_USER_LEAVES: (userId: string) =>
+        `${API_BASE_URL}/api/leaves/user/${userId}?requesterId=${userId}`,
+      GET_MONTH_LEAVES: (year: number, month: number, callerId: string) =>
+        `${API_BASE_URL}/api/leaves/month/${year}/${String(month).padStart(2, '0')}?requesterId=${callerId}`,
       CREATE_LEAVE: `${API_BASE_URL}/api/leaves`,
     },
   },

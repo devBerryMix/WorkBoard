@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { getTeamLeaveSummaryByMonth } from '@/src/services/leaveService';
 import { TeamLeaveMember } from '@/src/types';
+import { useAuth } from '@/src/contexts/AuthContext';
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -15,6 +16,7 @@ import {
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function CalendarScreen() {
+  const { user } = useAuth();
   const today = getTodayString();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -25,10 +27,11 @@ export default function CalendarScreen() {
 
   // Load leave data when month changes
   useEffect(() => {
+    if (!user) return;
     setLoading(true);
     (async () => {
       try {
-        const map = await getTeamLeaveSummaryByMonth(year, month);
+        const map = await getTeamLeaveSummaryByMonth(year, month, user.id);
         setLeaveMap(map);
       } catch (error) {
         console.error('Failed to fetch team leave summary:', error);

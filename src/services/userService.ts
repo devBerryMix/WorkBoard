@@ -1,13 +1,12 @@
 import { User } from '@/src/types';
 import { API_CONFIG, fetchAPI } from '@/src/config/api';
 
-// Get user information from backend API
-export async function getUser(userId: string = '1'): Promise<User> {
+export async function getUser(userId: string, callerId: string): Promise<User> {
   try {
-    const response = await fetchAPI(API_CONFIG.ENDPOINTS.USERS.GET_USER(userId), {
-      method: 'GET',
-    });
-
+    const response = await fetchAPI(
+      API_CONFIG.ENDPOINTS.USERS.GET_USER(userId, callerId),
+      { method: 'GET' },
+    );
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch user:', error);

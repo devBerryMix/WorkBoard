@@ -36,6 +36,8 @@ export interface User {
   id: string;
   employeeNo: string;
   name: string;
+  group: string;
+  departmentId: string;
   department: string;
   position: string;
   email: string;
