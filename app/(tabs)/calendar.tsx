@@ -1,9 +1,13 @@
-﻿import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Modal, ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { getTeamLeaveSummaryByMonth } from '@/src/services/leaveService';
-import { TeamLeaveMember } from '@/src/types';
+import { getUsersByDepartment } from '@/src/services/userService';
+import { TeamLeaveMember, User } from '@/src/types';
 import { useAuth } from '@/src/contexts/AuthContext';
 import {
   getDaysInMonth,
@@ -15,6 +19,14 @@ import {
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 
+const DEPARTMENTS = [
+  { id: 'D001', name: 'IT팀' },
+  { id: 'D002', name: '테이블게임팀' },
+  { id: 'D003', name: '전자게임팀' },
+  { id: 'D004', name: '오퍼레이션지원팀' },
+  { id: 'D005', name: '카지노CS팀' },
+];
+
 export default function CalendarScreen() {
   const { user } = useAuth();
   const today = getTodayString();
@@ -25,7 +37,13 @@ export default function CalendarScreen() {
   const [leaveMap, setLeaveMap] = useState<Record<string, TeamLeaveMember[]>>({});
   const [loading, setLoading] = useState(true);
 
-  // Load leave data when month changes
+  // Department popup state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDeptId, setSelectedDeptId] = useState(user?.departmentId ?? 'D001');
+  const [deptUsers, setDeptUsers] = useState<User[]>([]);
+  const [deptLeaveMap, setDeptLeaveMap] = useState<Record<string, TeamLeaveMember[]>>({});
+  const [deptLoading, setDeptLoading] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     setLoading(true);
@@ -42,6 +60,32 @@ export default function CalendarScreen() {
     })();
   }, [year, month]);
 
+  useEffect(() => {
+    if (!modalVisible || !user) return;
+    setDeptLoading(true);
+    (async () => {
+      try {
+        const [users, leaveData] = await Promise.all([
+          getUsersByDepartment(selectedDeptId, user.id),
+          getTeamLeaveSummaryByMonth(year, month, user.id, selectedDeptId),
+        ]);
+        setDeptUsers(users);
+        setDeptLeaveMap(leaveData);
+      } catch (error) {
+        console.error('Failed to fetch dept data:', error);
+        setDeptUsers([]);
+        setDeptLeaveMap({});
+      } finally {
+        setDeptLoading(false);
+      }
+    })();
+  }, [modalVisible, selectedDeptId, year, month]);
+
+  const openModal = () => {
+    setSelectedDeptId(user?.departmentId ?? 'D001');
+    setModalVisible(true);
+  };
+
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
 
@@ -55,6 +99,7 @@ export default function CalendarScreen() {
   for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
 
   const selectedMembers: TeamLeaveMember[] = leaveMap[selectedDate] ?? [];
+  const onLeaveIds = new Set((deptLeaveMap[selectedDate] ?? []).map(m => m.userId));
 
   const goToPrev = () => {
     if (month === 1) { setYear(y => y - 1); setMonth(12); }
@@ -72,8 +117,16 @@ export default function CalendarScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>팀 휴가 현황</Text>
-          <Text style={styles.headerSub}>팀원의 휴가 일정을 확인하세요</Text>
+          <View style={styles.headerRow}>
+            <View>
+              <Text style={styles.headerTitle}>팀 휴가 현황</Text>
+              <Text style={styles.headerSub}>팀원의 휴가 일정을 확인하세요</Text>
+            </View>
+            <TouchableOpacity onPress={openModal} style={styles.deptFilterBtn}>
+              <Ionicons name="people-outline" size={16} color="#F5EDD8" />
+              <Text style={styles.deptFilterBtnText}>부서별</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.content}>
@@ -146,7 +199,6 @@ export default function CalendarScreen() {
                         </Text>
                       </View>
 
-                      {/* Leave count indicator */}
                       {members.length > 0 ? (
                         <Text style={styles.leaveCount}>{members.length}명</Text>
                       ) : (
@@ -187,6 +239,94 @@ export default function CalendarScreen() {
 
         </View>
       </ScrollView>
+
+      {/* Department Popup Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>부서별 휴가 현황</Text>
+                <Text style={styles.modalSub}>{formatDateKo(selectedDate)}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
+                <Ionicons name="close" size={22} color="#4A3C2E" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Department Tabs */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.deptTabsScroll}
+              contentContainerStyle={styles.deptTabsContent}
+            >
+              {DEPARTMENTS.map(dept => (
+                <TouchableOpacity
+                  key={dept.id}
+                  onPress={() => setSelectedDeptId(dept.id)}
+                  style={[
+                    styles.deptTab,
+                    selectedDeptId === dept.id && styles.deptTabActive,
+                  ]}
+                >
+                  <Text style={[
+                    styles.deptTabText,
+                    selectedDeptId === dept.id && styles.deptTabTextActive,
+                  ]}>
+                    {dept.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={styles.modalDivider} />
+
+            {/* Member List */}
+            <ScrollView style={styles.memberListScroll} showsVerticalScrollIndicator={false}>
+              {deptLoading ? (
+                <ActivityIndicator size="small" color="#C8A84E" style={styles.modalLoader} />
+              ) : deptUsers.length === 0 ? (
+                <Text style={styles.emptyText}>부서원 정보를 불러올 수 없습니다</Text>
+              ) : (
+                deptUsers.map(member => {
+                  const isOnLeave = onLeaveIds.has(member.id);
+                  return (
+                    <View key={member.id} style={styles.modalMemberRow}>
+                      <View style={[styles.avatar, isOnLeave && styles.avatarOnLeave]}>
+                        <Text style={[styles.avatarText, isOnLeave && styles.avatarTextOnLeave]}>
+                          {member.name[0]}
+                        </Text>
+                      </View>
+                      <View style={styles.memberInfo}>
+                        <Text style={styles.memberName}>{member.name}</Text>
+                        <Text style={styles.memberDept}>{member.position} · {member.department}</Text>
+                      </View>
+                      {isOnLeave ? (
+                        <View style={styles.leaveBadge}>
+                          <Text style={styles.leaveBadgeText}>휴가중</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.workBadge}>
+                          <Text style={styles.workBadgeText}>근무중</Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -206,6 +346,11 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 40,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   headerTitle: {
     fontSize: 22,
     fontWeight: '700',
@@ -215,6 +360,21 @@ const styles = StyleSheet.create({
   headerSub: {
     fontSize: 13,
     color: '#A08040',
+  },
+  deptFilterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    marginTop: 4,
+  },
+  deptFilterBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#F5EDD8',
   },
   content: {
     paddingHorizontal: 16,
@@ -345,6 +505,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#C8A84E',
   },
+  avatarOnLeave: {
+    backgroundColor: '#EDE8F8',
+  },
+  avatarTextOnLeave: {
+    color: '#6840B0',
+  },
   memberInfo: {
     flex: 1,
   },
@@ -368,5 +534,94 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#6840B0',
+  },
+  workBadge: {
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+  },
+  workBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2D7A4F',
+  },
+
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    maxHeight: '75%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1C1508',
+    marginBottom: 2,
+  },
+  modalSub: {
+    fontSize: 13,
+    color: '#7A6A58',
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  deptTabsScroll: {
+    flexGrow: 0,
+  },
+  deptTabsContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  deptTab: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#F0EBE3',
+  },
+  deptTabActive: {
+    backgroundColor: '#1C150C',
+  },
+  deptTabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#7A6A58',
+  },
+  deptTabTextActive: {
+    color: '#F5EDD8',
+    fontWeight: '700',
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: '#E4D8C8',
+    marginTop: 14,
+    marginBottom: 4,
+  },
+  memberListScroll: {
+    paddingHorizontal: 20,
+  },
+  modalMemberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0EBE3',
+  },
+  modalLoader: {
+    paddingVertical: 32,
   },
 });

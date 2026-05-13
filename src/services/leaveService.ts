@@ -45,15 +45,16 @@ export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
     }, 0);
 }
 
-// 팀 달력용 — 같은 부서 연차 조회 (callerId로 부서 판별)
+// 팀 달력용 — 부서별 연차 조회 (targetDeptId 생략 시 callerId의 부서)
 export async function getTeamLeaveSummaryByMonth(
   year: number,
   month: number,
   callerId: string,
+  targetDeptId?: string,
 ): Promise<Record<string, TeamLeaveMember[]>> {
   try {
     const response = await fetchAPI(
-      API_CONFIG.ENDPOINTS.LEAVES.GET_MONTH_LEAVES(year, month, callerId),
+      API_CONFIG.ENDPOINTS.LEAVES.GET_MONTH_LEAVES(year, month, callerId, targetDeptId),
       { method: 'GET' },
     );
     return await response.json();

@@ -13,3 +13,16 @@ export async function getUser(userId: string, callerId: string): Promise<User> {
     throw new Error('FETCH_USER_FAILED');
   }
 }
+
+export async function getUsersByDepartment(departmentId: string, callerId: string): Promise<User[]> {
+  try {
+    const response = await fetchAPI(
+      API_CONFIG.ENDPOINTS.USERS.GET_DEPT_USERS(departmentId, callerId),
+      { method: 'GET' },
+    );
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch department users:', error);
+    throw new Error('FETCH_DEPT_USERS_FAILED');
+  }
+}
