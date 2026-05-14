@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '@/src/types';
+import { checkInToday } from '@/src/services/attendanceService';
 
 interface AuthContextValue {
   user: User | null;
@@ -15,6 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function setUser(u: User) {
     setUserState(u);
+    checkInToday();
   }
 
   function logout() {

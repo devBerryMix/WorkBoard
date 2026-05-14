@@ -1,5 +1,6 @@
 import { LeaveRequest, TeamLeaveMember } from '@/src/types';
 import { API_CONFIG, fetchAPI } from '@/src/config/api';
+import { getMockPendingLeaves, updateMockLeaveStatus } from '@/src/data/leaves';
 
 // 본인 연차 조회 — userId 한 개만 필요 (requesterId = userId)
 export async function getLeaveRequests(userId: string): Promise<LeaveRequest[]> {
@@ -43,6 +44,37 @@ export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
       const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       return total + days;
     }, 0);
+}
+
+// L4 only: fetch all pending leave requests for approval
+export async function getPendingLeaveRequests(callerId: string): Promise<LeaveRequest[]> {
+  try {
+    const response = await fetchAPI(
+      API_CONFIG.ENDPOINTS.LEAVES.GET_PENDING(callerId),
+      { method: 'GET' },
+    );
+    return await response.json();
+  } catch {
+    // API not yet implemented — fall back to mock data
+    return getMockPendingLeaves();
+  }
+}
+
+// L4 only: approve or reject a leave request
+export async function processLeave(
+  leaveId: string,
+  action: 'approved' | 'rejected',
+  callerId: string,
+): Promise<void> {
+  try {
+    await fetchAPI(API_CONFIG.ENDPOINTS.LEAVES.UPDATE_STATUS(leaveId), {
+      method: 'PATCH',
+      body: JSON.stringify({ status: action, requesterId: callerId }),
+    });
+  } catch {
+    // API not yet implemented — update mock data in memory
+    updateMockLeaveStatus(leaveId, action);
+  }
 }
 
 // 팀 달력용 — 부서별 연차 조회 (targetDeptId 생략 시 callerId의 부서)

@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C150C',
     alignItems: 'center',
     paddingTop: 28,
-    paddingBottom: 44,
+    paddingBottom: 24,
   },
   avatar: {
     width: 80,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 32,
-    marginTop: -20,
+    marginTop: 0,
   },
   card: {
     backgroundColor: '#FFFFFF',

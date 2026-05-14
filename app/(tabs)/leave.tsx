@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   headerTitle: {
     fontSize: 22,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
-    marginTop: -20,
+    marginTop: 0,
   },
   card: {
     backgroundColor: '#FFFFFF',

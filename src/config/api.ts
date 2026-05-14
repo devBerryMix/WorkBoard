@@ -33,6 +33,10 @@ export const API_CONFIG = {
         return targetDeptId ? `${base}&targetDepartmentId=${targetDeptId}` : base;
       },
       CREATE_LEAVE: `${API_BASE_URL}/api/leaves`,
+      GET_PENDING: (callerId: string) =>
+        `${API_BASE_URL}/api/leaves/pending?requesterId=${callerId}`,
+      UPDATE_STATUS: (leaveId: string) =>
+        `${API_BASE_URL}/api/leaves/${leaveId}/status`,
     },
   },
 };

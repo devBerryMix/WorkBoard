@@ -53,17 +53,6 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.cardLabel}>오늘 근무 상태</Text>
             <StatusBadge status={todayRecord?.status ?? null} />
-            <View style={styles.timeRow}>
-              <View style={styles.timeItem}>
-                <Text style={styles.timeLabel}>출근</Text>
-                <Text style={styles.timeValue}>{todayRecord?.checkIn ?? '-'}</Text>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.timeItem}>
-                <Text style={styles.timeLabel}>퇴근</Text>
-                <Text style={styles.timeValue}>{todayRecord?.checkOut ?? '-'}</Text>
-              </View>
-            </View>
           </View>
 
           {/* Monthly Summary Card */}
@@ -118,7 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 48,
+    paddingBottom: 24,
   },
   greeting: {
     fontSize: 14,
@@ -144,7 +133,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
-    marginTop: -24,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -162,30 +150,6 @@ const styles = StyleSheet.create({
     color: '#9A8A78',
     fontWeight: '500',
     marginBottom: 12,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  timeItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  timeLabel: {
-    fontSize: 12,
-    color: '#B0A090',
-    marginBottom: 4,
-  },
-  timeValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1508',
-  },
-  divider: {
-    width: 1,
-    height: 36,
-    backgroundColor: '#EEE5D8',
   },
   leaveCount: {
     fontSize: 48,

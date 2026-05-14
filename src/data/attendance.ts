@@ -1,6 +1,18 @@
 import { AttendanceRecord } from '@/src/types';
 
 export const mockAttendanceRecords: AttendanceRecord[] = [
+  // Today: no checkIn — will be set by checkInToday() on login
+  { date: '2026-05-14', status: 'present' },
+  { date: '2026-05-13', checkIn: '09:00', checkOut: '18:00', status: 'present' },
+  { date: '2026-05-12', checkIn: '09:10', checkOut: '18:05', status: 'present' },
+  { date: '2026-05-11', checkIn: '09:05', checkOut: '18:00', status: 'present' },
+  { date: '2026-05-09', checkIn: '08:58', checkOut: '18:00', status: 'present' },
+  { date: '2026-05-08', checkIn: '09:05', checkOut: '18:10', status: 'present' },
+  { date: '2026-05-07', checkIn: '09:00', checkOut: '18:00', status: 'present' },
+  { date: '2026-05-06', status: 'leave' },
+  { date: '2026-05-05', status: 'holiday' },
+  { date: '2026-05-04', checkIn: '09:00', checkOut: '18:00', status: 'present' },
+  { date: '2026-05-02', checkIn: '09:15', checkOut: '18:00', status: 'present' },
   { date: '2026-05-01', checkIn: '09:05', checkOut: '18:10', status: 'present' },
   { date: '2026-04-30', checkIn: '09:00', checkOut: '18:00', status: 'present' },
   { date: '2026-04-29', status: 'leave' },

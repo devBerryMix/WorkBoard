@@ -5,12 +5,14 @@
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { getPendingLeaveRequests, processLeave } from '@/src/services/leaveService';
+import { useAuth } from '@/src/contexts/AuthContext';
 import { mockUsers } from '@/src/data/user';
 import { LeaveRequest } from '@/src/types';
 import { formatDateKo } from '@/src/utils/dateUtils';
@@ -30,15 +32,23 @@ function getUserDept(userId: string): string {
 }
 
 export default function ApproveScreen() {
-  const [pending, setPending] = useState<LeaveRequest[]>(() => getPendingLeaveRequests());
+  const { user } = useAuth();
+  const [pending, setPending] = useState<LeaveRequest[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
-      setPending(getPendingLeaveRequests());
-    }, [])
+      if (!user) return;
+      setLoading(true);
+      getPendingLeaveRequests(user.id)
+        .then(setPending)
+        .catch(() => setPending([]))
+        .finally(() => setLoading(false));
+    }, [user])
   );
 
   function handleAction(id: string, action: 'approved' | 'rejected') {
+    if (!user) return;
     const label = action === 'approved' ? '승인' : '반려';
     Alert.alert(
       `${label} 확인`,
@@ -48,9 +58,14 @@ export default function ApproveScreen() {
         {
           text: label,
           style: action === 'rejected' ? 'destructive' : 'default',
-          onPress: () => {
-            processLeave(id, action);
-            setPending(getPendingLeaveRequests());
+          onPress: async () => {
+            try {
+              await processLeave(id, action, user.id);
+              const updated = await getPendingLeaveRequests(user.id);
+              setPending(updated);
+            } catch {
+              Alert.alert('오류', '처리 중 문제가 발생했습니다. 다시 시도해주세요.');
+            }
           },
         },
       ]
@@ -73,7 +88,9 @@ export default function ApproveScreen() {
             <Text style={styles.badgeText}>대기 중 {pending.length}건</Text>
           </View>
 
-          {pending.length === 0 ? (
+          {loading ? (
+            <ActivityIndicator size="large" color="#C8A84E" style={{ marginTop: 40 }} />
+          ) : pending.length === 0 ? (
             <View style={styles.emptyCard}>
               <Ionicons name="checkmark-circle-outline" size={48} color="#1E7A3E" />
               <Text style={styles.emptyTitle}>모두 처리되었습니다</Text>
@@ -156,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   headerTitle: {
     fontSize: 22,
@@ -172,7 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 32,
-    marginTop: -20,
+    marginTop: 0,
   },
   badge: {
     flexDirection: 'row',

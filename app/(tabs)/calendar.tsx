@@ -262,12 +262,7 @@ export default function CalendarScreen() {
             </View>
 
             {/* Department Tabs */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.deptTabsScroll}
-              contentContainerStyle={styles.deptTabsContent}
-            >
+            <View style={styles.deptTabsWrap}>
               {DEPARTMENTS.map(dept => (
                 <TouchableOpacity
                   key={dept.id}
@@ -285,7 +280,7 @@ export default function CalendarScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
 
             <View style={styles.modalDivider} />
 
@@ -344,7 +339,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C150C',
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   headerRow: {
     flexDirection: 'row',
@@ -380,7 +375,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
-    marginTop: -20,
+    marginTop: 0,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -565,7 +560,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 4,
   },
   modalTitle: {
     fontSize: 18,
@@ -580,10 +575,9 @@ const styles = StyleSheet.create({
   closeBtn: {
     padding: 4,
   },
-  deptTabsScroll: {
-    flexGrow: 0,
-  },
-  deptTabsContent: {
+  deptTabsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 16,
     gap: 8,
   },
@@ -592,6 +586,8 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 20,
     backgroundColor: '#F0EBE3',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deptTabActive: {
     backgroundColor: '#1C150C',
@@ -600,6 +596,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     color: '#7A6A58',
+    lineHeight: 18,
+    includeFontPadding: false,
   },
   deptTabTextActive: {
     color: '#F5EDD8',

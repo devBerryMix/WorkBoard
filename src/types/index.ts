@@ -1,4 +1,4 @@
-export type AttendanceStatus = 'present' | 'absent' | 'leave' | 'holiday';
+export type AttendanceStatus = 'present' | 'absent' | 'leave' | 'holiday' | 'working';
 
 export interface AttendanceRecord {
   date: string;      // YYYY-MM-DD
