@@ -1,4 +1,5 @@
 import { LeaveRequest } from '@/src/types';
+import { mockUsers } from '@/src/data/user';
 
 export const mockLeaveRequests: LeaveRequest[] = [
   // 이정호 (userId: '1')
@@ -38,8 +39,11 @@ export const mockLeaveRequests: LeaveRequest[] = [
 // In-memory state for mock approve/reject (resets on app restart)
 let _leaves: LeaveRequest[] = [...mockLeaveRequests];
 
-export function getMockPendingLeaves(): LeaveRequest[] {
-  return _leaves.filter(r => r.status === 'pending');
+export function getMockPendingLeaves(departmentId: string): LeaveRequest[] {
+  const deptUserIds = new Set(
+    mockUsers.filter(u => u.departmentId === departmentId).map(u => u.id)
+  );
+  return _leaves.filter(r => r.status === 'pending' && deptUserIds.has(r.userId));
 }
 
 export function updateMockLeaveStatus(id: string, status: 'approved' | 'rejected'): void {

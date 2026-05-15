@@ -1,323 +1,169 @@
 # WorkBoard 데이터베이스 & API 마이그레이션 가이드
 
-## 📚 문서 목록
-
-### 1. **oracle_table_design.sql**
-- **목적**: Mock 데이터를 Oracle 데이터베이스에 저장하기 위한 테이블 설계서
-- **포함 내용**:
-  - 코드 테이블 (직급, 부서, 상태 코드)
-  - 마스터 테이블 (사용자, 로그인 계정)
-  - 거래 테이블 (연차 신청, 근태 기록)
-  - 뷰 (사용자 연차 현황, 팀원 휴가 현황)
-  - 시퀀스 & 샘플 데이터
-- **사용 방법**:
-  ```bash
-  sqlplus system/password@oracle_db < oracle_table_design.sql
-  ```
-
-### 2. **migration_plan.md**
-- **목적**: Mock 데이터에서 실제 Oracle API로 전환하기 위한 마이그레이션 전략
-- **포함 내용**:
-  - 아키텍처 변경사항
-  - 마이그레이션 3단계 계획
-  - 서비스 계층 상세 변경사항
-  - API 엔드포인트 설계
-  - 데이터 타입 매핑
-  - 마이그레이션 스크립트 예시
-  - 보안 및 성능 고려사항
-  - 배포 & 롤백 계획
-- **주요 특징**:
-  - 기존 React Native 앱 구조 유지
-  - 서비스 계층만 변경 (UI 변경 없음)
-  - Mock → API 단계적 마이그레이션 가능
-  - Feature Flag로 조건부 사용 가능
+Last Updated: 2026-05-15
 
 ---
 
-## 🏗️ 현재 구조 (Mock)
+## 문서 목록
 
+### 1. `oracle_table_design.sql`
+Oracle DB 테이블 설계서. 아래를 포함합니다.
+- 코드 테이블: 직급(L1~L4), 부서(D001~D005), 연차 상태, 근태 상태
+- 마스터 테이블: TB_USERS, TB_LOGIN_ACCOUNTS
+- 거래 테이블: TB_LEAVE_REQUESTS, TB_ATTENDANCE_RECORDS
+- 뷰: 사용자 연차 현황, 날짜별 팀원 휴가 현황
+- 시퀀스 및 샘플 데이터
+
+실행 방법:
+```bash
+sqlplus system/password@localhost:1521/XE < oracle_table_design.sql
 ```
-WorkBoard 앱 (React Native)
-├── src/services/
-│   ├── authService.ts (mock login)
-│   ├── leaveService.ts (mock leave requests)
-│   └── userService.ts (mock users)
-├── src/data/
-│   ├── user.ts (mockUsers)
-│   ├── leaves.ts (mockLeaveRequests)
-│   ├── attendance.ts (mockAttendanceRecords)
-│   └── mockAccounts.ts (login accounts)
-└── src/contexts/
-    └── AuthContext.tsx (global user state)
-```
+
+### 2. `migration_plan.md`
+mock 데이터에서 Oracle DB로 전환하기 위한 마이그레이션 계획서.
+- 현재 구현 완료 항목 정리
+- 남은 작업 단계별 체크리스트
+- 데이터 마이그레이션 스크립트 예시
+- Oracle 연결 설정 예시
+- 보안 및 롤백 전략
 
 ---
 
-## 🎯 목표 구조 (Real API)
+## 현재 구조
 
 ```
-WorkBoard 앱 (React Native)
+workboard/                        # React Native App
 ├── src/services/
-│   ├── authService.ts (API login)
-│   ├── leaveService.ts (API calls)
-│   ├── attendanceService.ts (API calls)
-│   └── apiClient.ts (HTTP client config)
-└── src/contexts/
-    └── AuthContext.tsx (global user state)
-
-Node.js Backend API
-├── routes/
-│   ├── auth.ts
-│   ├── users.ts
+│   ├── authService.ts       → POST /api/auth/login (API 연결 완료)
+│   ├── leaveService.ts      → leaves API 호출 + mock fallback
+│   ├── userService.ts       → users API 호출
+│   └── attendanceService.ts → mock 전용 (API 미연결)
+├── src/config/
+│   └── api.ts               → API URL 상수, fetchAPI 헬퍼
+├── src/data/                → API 실패 시 fallback용 mock 데이터
+│   ├── user.ts
 │   ├── leaves.ts
 │   └── attendance.ts
-├── services/
-│   ├── authService.ts
-│   ├── userService.ts
-│   ├── leaveService.ts
-│   └── attendanceService.ts
-└── database/
-    └── Oracle 연결
+└── src/contexts/
+    └── AuthContext.tsx      → 전역 로그인 상태
 
-Oracle Database
-├── TB_USERS
-├── TB_LOGIN_ACCOUNTS
-├── TB_LEAVE_REQUESTS
-├── TB_ATTENDANCE_RECORDS
-└── (코드 테이블)
+workboard-backend/                # Node.js 백엔드 ← 구축 완료
+└── src/routes/
+    ├── auth.js      POST /api/auth/login
+    ├── users.js     GET  /api/users/*
+    └── leaves.js    GET/POST/PATCH /api/leaves/*
 ```
 
 ---
 
-## 📋 현재 엔티티 & Oracle 테이블 매핑
+## 현재 구현된 API 엔드포인트
 
-### User (사용자)
+| 메서드 | 경로 | 설명 | 접근 제어 |
+|--------|------|------|---------|
+| POST | `/api/auth/login` | 로그인 | 없음 |
+| GET | `/api/users?requesterId={id}` | 같은 부서 사용자 목록 | 같은 부서 |
+| GET | `/api/users/:userId?requesterId={id}` | 개별 사용자 조회 | 같은 부서 |
+| GET | `/api/users/department/:deptId?requesterId={id}` | 부서별 사용자 목록 | requesterId 필요 |
+| GET | `/api/leaves/user/:userId?requesterId={id}` | 본인 연차 조회 | 본인만 |
+| GET | `/api/leaves/month/:year/:month?requesterId={id}` | 월별 팀 연차 달력 | 같은 부서 |
+| GET | `/api/leaves/pending?requesterId={id}` | 승인 대기 연차 목록 | L4 + 같은 부서 |
+| POST | `/api/leaves` | 연차 신청 | 본인만 |
+| PATCH | `/api/leaves/:id/status` | 연차 승인/반려 | L4 + 같은 부서 |
+
+---
+
+## 엔티티 & Oracle 테이블 매핑
+
+### User
 ```
-React Native:
-{
-  id: string,
-  employeeNo: string,
-  name: string,
-  department: string,
-  position: string,
-  email: string,
-  totalLeaves: number,
-  usedLeaves: number
-}
-
-↓ Maps to ↓
-
-Oracle:
-TB_USERS:
-  USER_ID (PK) - VARCHAR2(50)
-  EMPLOYEE_NO - VARCHAR2(20) UNIQUE
-  USER_NAME - VARCHAR2(100)
-  DEPARTMENT_CODE - VARCHAR2(10) FK
-  POSITION_CODE - VARCHAR2(10) FK
-  EMAIL - VARCHAR2(100) UNIQUE
-  TOTAL_LEAVE_DAYS - NUMBER(3)
-  STATUS - VARCHAR2(1) (A/I/D)
-  CREATED_AT, UPDATED_AT - TIMESTAMP
-```
-
-### LeaveRequest (연차 신청)
-```
-React Native:
-{
-  id: string,
-  userId: string,
-  startDate: string (YYYY-MM-DD),
-  endDate: string (YYYY-MM-DD),
-  reason: string,
-  status: 'pending' | 'approved' | 'rejected',
-  createdAt: string (YYYY-MM-DD)
-}
-
-↓ Maps to ↓
-
-Oracle:
-TB_LEAVE_REQUESTS:
-  LEAVE_REQUEST_ID (PK) - VARCHAR2(50)
-  USER_ID (FK) - VARCHAR2(50)
-  START_DATE - DATE
-  END_DATE - DATE
-  LEAVE_REASON - VARCHAR2(500)
-  LEAVE_STATUS_CODE (FK) - VARCHAR2(20)
-  APPROVAL_USER_ID (FK) - VARCHAR2(50)
-  APPROVED_AT - TIMESTAMP
-  REJECTION_REASON - VARCHAR2(500)
-  CREATED_AT, UPDATED_AT - TIMESTAMP
+프론트엔드 타입                Oracle
+────────────────────────────────────────────────────────
+id: string              → TB_USERS.USER_ID
+employeeNo: string      → TB_USERS.EMPLOYEE_NO
+name: string            → TB_USERS.USER_NAME
+departmentId: string    → TB_USERS.DEPARTMENT_CODE  (D001~D005, 접근제어 기준)
+department: string      → TB_DEPARTMENT_CODE.DEPARTMENT_NAME  (조인)
+group: string           → TB_DEPARTMENT_CODE.GROUP_NAME       (조인)
+position: string        → TB_USERS.POSITION_CODE    (L1~L4)
+email: string           → TB_USERS.EMAIL
+totalLeaves: number     → TB_USERS.TOTAL_LEAVE_DAYS
+usedLeaves: number      → VW_USER_LEAVE_SUMMARY.USED_LEAVE_DAYS  (뷰 계산)
 ```
 
-### AttendanceRecord (근태 기록)
+### LeaveRequest
 ```
-React Native:
-{
-  date: string (YYYY-MM-DD),
-  checkIn?: string (HH:mm),
-  checkOut?: string (HH:mm),
-  status: 'present' | 'absent' | 'leave' | 'holiday'
-}
+프론트엔드 타입                Oracle
+────────────────────────────────────────────────────────
+id: string              → TB_LEAVE_REQUESTS.LEAVE_REQUEST_ID
+userId: string          → TB_LEAVE_REQUESTS.USER_ID
+startDate: string       → TB_LEAVE_REQUESTS.START_DATE  (DATE)
+endDate: string         → TB_LEAVE_REQUESTS.END_DATE    (DATE)
+reason: string          → TB_LEAVE_REQUESTS.LEAVE_REASON
+status: string          → TB_LEAVE_REQUESTS.LEAVE_STATUS_CODE  (대문자: PENDING/APPROVED/REJECTED)
+createdAt: string       → TB_LEAVE_REQUESTS.CREATED_AT
+```
 
-↓ Maps to ↓
-
-Oracle:
-TB_ATTENDANCE_RECORDS:
-  ATTENDANCE_RECORD_ID (PK) - VARCHAR2(50)
-  USER_ID (FK) - VARCHAR2(50)
-  ATTENDANCE_DATE - DATE
-  CHECK_IN_TIME - VARCHAR2(5)
-  CHECK_OUT_TIME - VARCHAR2(5)
-  ATTENDANCE_STATUS (FK) - VARCHAR2(20)
-  REMARKS - VARCHAR2(500)
-  CREATED_AT, UPDATED_AT - TIMESTAMP
+### AttendanceRecord
+```
+프론트엔드 타입                Oracle
+────────────────────────────────────────────────────────
+date: string            → TB_ATTENDANCE_RECORDS.ATTENDANCE_DATE
+checkIn?: string        → TB_ATTENDANCE_RECORDS.CHECK_IN_TIME   (HH:mm)
+checkOut?: string       → TB_ATTENDANCE_RECORDS.CHECK_OUT_TIME  (HH:mm)
+status: string          → TB_ATTENDANCE_RECORDS.ATTENDANCE_STATUS
+                           PRESENT / WORKING / ABSENT / LEAVE / HOLIDAY
+                           (WORKING은 CHECK_IN 있고 CHECK_OUT 없는 당일 레코드)
 ```
 
 ---
 
-## 🚀 마이그레이션 로드맵
+## 조직 구조
 
-### Phase 1: 데이터베이스 준비 (1-2주)
-- [ ] Oracle 데이터베이스 생성
-- [ ] oracle_table_design.sql 실행
-- [ ] 테이블 및 뷰 생성 확인
-- [ ] Mock 데이터 마이그레이션 스크립트 작성 & 실행
-- [ ] 데이터베이스 기본 쿼리 테스트
+```
+경영지원그룹
+└── IT팀 (D001, ID 1~10)
+    └── L4 승인권자: 김봉균 (goodman@workboard.com)
 
-### Phase 2: Node.js API 서버 구축 (1-2주)
-- [ ] Node.js + Express 프로젝트 초기화
-- [ ] Oracle 데이터베이스 연결 (oracledb)
-- [ ] API 엔드포인트 구현
-  - 인증 (login, logout, refresh)
-  - 사용자 (get user, get leave summary)
-  - 연차 (list, pending, submit, approve, reject)
-  - 근태 (list, checkin, checkout)
-- [ ] 미들웨어 (인증, 에러 핸들링, CORS)
-- [ ] API 문서화 (Swagger)
-
-### Phase 3: React Native 앱 수정 (1주)
-- [ ] API 클라이언트 설정 (axios/fetch)
-- [ ] authService.ts 수정 (API 호출)
-- [ ] leaveService.ts 수정 (API 호출)
-- [ ] attendanceService.ts 추가
-- [ ] 로컬 스토리지에 토큰 저장
-- [ ] 에러 핸들링 & 로딩 상태
-
-### Phase 4: 테스트 & 배포 (1주)
-- [ ] 통합 테스트
-- [ ] 성능 테스트
-- [ ] 보안 검토 (SQL Injection, XSS 등)
-- [ ] 스테이징 환경 배포
-- [ ] 모니터링 설정
-
----
-
-## 📝 주요 특징
-
-### 1. Service Layer 분리
-현재 코드는 이미 서비스 계층이 분리되어 있어 **UI 변경 없이** 데이터 소스만 변경 가능합니다.
-
-**변경 전 (Mock)**
-```typescript
-// src/services/leaveService.ts
-export function getLeaveRequests(userId: string): LeaveRequest[] {
-  return leaveRequests.filter(r => r.userId === userId);
-}
+카지노오퍼레이션그룹
+├── 테이블게임팀 (D002, ID 11~20)
+│   └── L4 승인권자: 정민하 (minha.j@workboard.com)
+├── 전자게임팀 (D003, ID 21~30)
+│   └── L4 승인권자: 임채원 (chaewon.lim@workboard.com)
+├── 오퍼레이션지원팀 (D004, ID 31~40)
+│   └── L4 승인권자: 고미래 (mirae.ko@workboard.com)
+└── 카지노CS팀 (D005, ID 41~50)
+    └── L4 승인권자: 탁현준 (hyunjun.tak@workboard.com)
 ```
 
-**변경 후 (API)**
-```typescript
-// src/services/leaveService.ts
-export async function getLeaveRequests(userId: string): Promise<LeaveRequest[]> {
-  const response = await apiClient.get(`/leaves?userId=${userId}`);
-  return response.data;
-}
-```
-
-UI 코드는 동일하게 유지됩니다!
-
-### 2. 역할 기반 접근 (Role-Based Access)
-- L4 직급만 연차 승인 가능 (앱에서 이미 구현)
-- API 서버에서도 동일한 검증 필요
-
-### 3. 타임스탬프 추적
-모든 테이블에 CREATED_AT, UPDATED_AT이 있어 데이터 변경 추적 가능
-
-### 4. Soft Delete 구현
-STATUS 컬럼으로 논리적 삭제 구현 (물리적 삭제 없음)
+Mock 계정 비밀번호: 모두 `1234`
 
 ---
 
-## 🔐 보안 체크리스트
+## 남은 마이그레이션 단계
 
-- [ ] 패스워드는 bcrypt 또는 PBKDF2로 해싱
-- [ ] JWT 토큰 사용 (AccessToken: 15분, RefreshToken: 7일)
-- [ ] HTTPS 필수 (프로덕션)
-- [ ] CORS 설정 (앱 도메인만 허용)
-- [ ] SQL Injection 방지 (Parameterized Query)
-- [ ] 로그인 시도 제한 (Rate Limiting)
-- [ ] API 인증 검증 (모든 엔드포인트)
-- [ ] 감사 로그 (Audit Trail)
+- [x] Express 백엔드 API 서버 구축
+- [x] 프론트엔드 서비스 계층 API 호출 전환 (auth, leave, user)
+- [ ] Oracle DB 설치 및 테이블 생성
+- [ ] Mock → Oracle 데이터 마이그레이션
+- [ ] 백엔드 Oracle 연결 (node-oracledb)
+- [ ] 출결 API 구현 및 프론트 연결
+- [ ] JWT 인증 도입 (선택)
 
 ---
 
-## 🛠️ 개발 환경 설정
+## 개발 환경
 
-### 필요한 도구
-- Node.js 16+ 
-- Oracle Database (또는 Docker Oracle)
-- Postman (API 테스트)
-- git
-
-### Oracle Database 설치 (Docker)
 ```bash
-docker run -d \
-  -p 1521:1521 \
-  -e ORACLE_PWD=password \
-  -v oracle_data:/opt/oracle/oradata \
-  --name oracle \
-  gvenzl/oracle-xe:latest
+# 백엔드 실행
+cd workboard-backend
+npm run dev          # nodemon (파일 변경 자동 재시작)
+
+# 프론트엔드 실행
+cd workboard
+npm start            # Expo 개발 서버
+
+# 헬스 체크
+curl http://localhost:3000/health
 ```
 
-### 연결 테스트
-```bash
-sqlplus system/password@localhost:1521/XE
-```
-
----
-
-## 📚 참고 자료
-
-### Oracle Database
-- [Oracle oracledb npm package](https://github.com/oracle/node-oracledb)
-- [Oracle SQL Developer](https://www.oracle.com/database/sqldeveloper/)
-
-### Node.js & Express
-- [Express.js 공식 문서](https://expressjs.com/)
-- [JWT 인증 가이드](https://tools.ietf.org/html/rfc7519)
-
-### React Native
-- [Axios 라이브러리](https://axios-http.com/)
-- [AsyncStorage API](https://react-native-async-storage.github.io/)
-
----
-
-## ❓ FAQ
-
-### Q: Mock 데이터는 언제 삭제하나요?
-A: Phase 4 (배포) 이후에 `src/data/` 디렉토리 삭제. 그 전까지는 필요시 조건부로 사용 가능.
-
-### Q: 기존 mock 로그인 자격증명은?
-A: 모든 사용자 이메일로 로그인 가능, 패스워드는 '1234'
-
-### Q: 배포 중 문제가 발생하면?
-A: Mock 데이터를 유지했다면 Feature Flag로 빠르게 롤백 가능.
-
-### Q: 어떻게 API 테스트하나요?
-A: Postman 컬렉션 생성 후 수동 테스트, 추후 자동화 테스트 스크립트 추가.
-
----
-
-## 📞 문의
-
-마이그레이션 과정에서 문제가 발생하면 위 문서들을 참고하세요.
+Android 에뮬레이터에서 API 접근 시 `localhost` 대신 `10.0.2.2` 사용 (api.ts에서 자동 처리).

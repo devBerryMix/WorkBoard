@@ -130,7 +130,9 @@ export default function LeaveScreen() {
 
   const previewDays = calcDays(startDate, endDate);
   const remaining = user.totalLeaves - usedDays;
-  const minEndDate = startDate.length === 10 ? toDate(startDate) : undefined;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const minEndDate = startDate.length === 10 ? toDate(startDate) : today;
 
   // Open native DateTimePicker (iOS / Android only)
   const openPicker = (target: 'start' | 'end') => {
@@ -416,7 +418,7 @@ export default function LeaveScreen() {
                 mode="date"
                 display="spinner"
                 onChange={onDateChange}
-                minimumDate={activePicker === 'end' ? minEndDate : undefined}
+                minimumDate={activePicker === 'end' ? minEndDate : today}
                 style={styles.iosPicker}
               />
             </View>
@@ -431,7 +433,7 @@ export default function LeaveScreen() {
           mode="date"
           display="calendar"
           onChange={onDateChange}
-          minimumDate={activePicker === 'end' ? minEndDate : undefined}
+          minimumDate={activePicker === 'end' ? minEndDate : today}
         />
       )}
     </SafeAreaView>

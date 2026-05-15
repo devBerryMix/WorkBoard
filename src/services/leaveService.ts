@@ -46,8 +46,8 @@ export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
     }, 0);
 }
 
-// L4 only: fetch all pending leave requests for approval
-export async function getPendingLeaveRequests(callerId: string): Promise<LeaveRequest[]> {
+// L4 only: fetch pending leave requests for approval (filtered to approver's department)
+export async function getPendingLeaveRequests(callerId: string, departmentId: string): Promise<LeaveRequest[]> {
   try {
     const response = await fetchAPI(
       API_CONFIG.ENDPOINTS.LEAVES.GET_PENDING(callerId),
@@ -55,8 +55,7 @@ export async function getPendingLeaveRequests(callerId: string): Promise<LeaveRe
     );
     return await response.json();
   } catch {
-    // API not yet implemented — fall back to mock data
-    return getMockPendingLeaves();
+    return getMockPendingLeaves(departmentId);
   }
 }
 
