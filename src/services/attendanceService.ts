@@ -1,49 +1,52 @@
 import { AttendanceRecord, MonthlySummary } from '@/src/types';
-import { mockAttendanceRecords } from '@/src/data/attendance';
-import { getTodayString } from '@/src/utils/dateUtils';
+import { API_CONFIG, fetchAPI } from '@/src/config/api';
 
-const records: AttendanceRecord[] = [...mockAttendanceRecords];
-
-export function getAttendanceByMonth(year: number, month: number): AttendanceRecord[] {
-  const prefix = `${year}-${String(month).padStart(2, '0')}`;
-  return records.filter(r => r.date.startsWith(prefix));
+export async function getAttendanceByMonth(userId: string, year: number, month: number): Promise<AttendanceRecord[]> {
+  try {
+    const response = await fetchAPI(
+      API_CONFIG.ENDPOINTS.ATTENDANCE.GET_USER(userId, year, month),
+      { method: 'GET' },
+    );
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch attendance:', error);
+    throw new Error('FETCH_ATTENDANCE_FAILED');
+  }
 }
 
-export function getTodayAttendance(): AttendanceRecord | undefined {
-  const record = records.find(r => r.date === getTodayString());
+export async function getTodayAttendance(userId: string): Promise<AttendanceRecord | undefined> {
+  const today = new Date();
+  const records = await getAttendanceByMonth(userId, today.getFullYear(), today.getMonth() + 1);
+  const todayStr = today.toISOString().split('T')[0];
+  const record = records.find(r => r.date === todayStr);
+
   if (!record) return undefined;
 
-  // Derive 'working' when checked in but not yet checked out
   if (record.checkIn && !record.checkOut && record.status === 'present') {
     return { ...record, status: 'working' };
   }
   return record;
 }
 
-// Called on login: records check-in time for today if not already set
-export function checkInToday(): void {
-  const today = getTodayString();
-  const idx = records.findIndex(r => r.date === today);
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  const currentTime = `${hh}:${mm}`;
-
-  if (idx === -1) {
-    records.unshift({ date: today, checkIn: currentTime, status: 'present' });
-  } else if (!records[idx].checkIn) {
-    records[idx] = { ...records[idx], checkIn: currentTime };
+export async function checkInToday(userId: string): Promise<AttendanceRecord> {
+  try {
+    const response = await fetchAPI(API_CONFIG.ENDPOINTS.ATTENDANCE.CHECKIN, {
+      method: 'POST',
+      body: JSON.stringify({ requesterId: userId, userId }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to check in:', error);
+    throw new Error('CHECKIN_FAILED');
   }
 }
 
-export function getMonthlySummary(year: number, month: number): MonthlySummary {
-  const monthly = getAttendanceByMonth(year, month);
+export async function getMonthlySummary(userId: string, year: number, month: number): Promise<MonthlySummary> {
+  const monthly = await getAttendanceByMonth(userId, year, month);
   return {
     workDays: monthly.length,
-    // 'working' also counts as present for the monthly summary
     presentDays: monthly.filter(r => r.status === 'present' || r.status === 'working').length,
     absentDays: monthly.filter(r => r.status === 'absent').length,
     leaveDays: monthly.filter(r => r.status === 'leave').length,
   };
 }
-

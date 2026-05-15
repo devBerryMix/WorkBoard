@@ -23,6 +23,11 @@ export const API_CONFIG = {
       GET_DEPT_USERS: (departmentId: string, callerId: string) =>
         `${API_BASE_URL}/api/users/department/${departmentId}?requesterId=${callerId}`,
     },
+    ATTENDANCE: {
+      GET_USER: (userId: string, year: number, month: number) =>
+        `${API_BASE_URL}/api/attendance/user/${userId}?requesterId=${userId}&year=${year}&month=${String(month).padStart(2, '0')}`,
+      CHECKIN: `${API_BASE_URL}/api/attendance/checkin`,
+    },
     LEAVES: {
       GET_ALL: (callerId: string) =>
         `${API_BASE_URL}/api/leaves?requesterId=${callerId}`,

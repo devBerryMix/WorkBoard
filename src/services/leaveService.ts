@@ -1,6 +1,5 @@
 import { LeaveRequest, TeamLeaveMember } from '@/src/types';
 import { API_CONFIG, fetchAPI } from '@/src/config/api';
-import { getMockPendingLeaves, updateMockLeaveStatus } from '@/src/data/leaves';
 
 // 본인 연차 조회 — userId 한 개만 필요 (requesterId = userId)
 export async function getLeaveRequests(userId: string): Promise<LeaveRequest[]> {
@@ -47,15 +46,16 @@ export function getUsedLeaveDays(leaveRequests: LeaveRequest[]): number {
 }
 
 // L4 only: fetch pending leave requests for approval (filtered to approver's department)
-export async function getPendingLeaveRequests(callerId: string, departmentId: string): Promise<LeaveRequest[]> {
+export async function getPendingLeaveRequests(callerId: string): Promise<LeaveRequest[]> {
   try {
     const response = await fetchAPI(
       API_CONFIG.ENDPOINTS.LEAVES.GET_PENDING(callerId),
       { method: 'GET' },
     );
     return await response.json();
-  } catch {
-    return getMockPendingLeaves(departmentId);
+  } catch (error) {
+    console.error('Failed to fetch pending leave requests:', error);
+    throw new Error('FETCH_PENDING_LEAVES_FAILED');
   }
 }
 
@@ -70,9 +70,9 @@ export async function processLeave(
       method: 'PATCH',
       body: JSON.stringify({ status: action, requesterId: callerId }),
     });
-  } catch {
-    // API not yet implemented — update mock data in memory
-    updateMockLeaveStatus(leaveId, action);
+  } catch (error) {
+    console.error('Failed to process leave request:', error);
+    throw new Error('PROCESS_LEAVE_FAILED');
   }
 }
 

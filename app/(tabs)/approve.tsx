@@ -40,7 +40,7 @@ export default function ApproveScreen() {
     useCallback(() => {
       if (!user) return;
       setLoading(true);
-      getPendingLeaveRequests(user.id, user.departmentId)
+      getPendingLeaveRequests(user.id)
         .then(setPending)
         .catch(() => setPending([]))
         .finally(() => setLoading(false));
@@ -61,7 +61,7 @@ export default function ApproveScreen() {
           onPress: async () => {
             try {
               await processLeave(id, action, user.id);
-              const updated = await getPendingLeaveRequests(user.id, user.departmentId);
+              const updated = await getPendingLeaveRequests(user.id);
               setPending(updated);
             } catch {
               Alert.alert('오류', '처리 중 문제가 발생했습니다. 다시 시도해주세요.');

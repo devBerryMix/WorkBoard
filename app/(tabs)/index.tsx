@@ -9,30 +9,41 @@ import StatusBadge from '@/src/components/StatusBadge';
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const { year, month } = getYearMonth();
   const [usedLeaves, setUsedLeaves] = useState(0);
+  const [todayRecord, setTodayRecord] = useState<Awaited<ReturnType<typeof getTodayAttendance>>>(undefined);
+  const [monthlySummary, setMonthlySummary] = useState({ workDays: 0, presentDays: 0, absentDays: 0, leaveDays: 0 });
 
-  // Load leave data on mount and when user changes
   useEffect(() => {
     if (!user) return;
 
     (async () => {
       try {
         const leaves = await getLeaveRequests(user.id);
-        const used = getUsedLeaveDays(leaves);
-        setUsedLeaves(used);
+        setUsedLeaves(getUsedLeaveDays(leaves));
       } catch (error) {
         console.error('Failed to load leave data:', error);
         setUsedLeaves(0);
+      }
+    })();
+
+    (async () => {
+      try {
+        const [today, summary] = await Promise.all([
+          getTodayAttendance(user.id),
+          getMonthlySummary(user.id, year, month),
+        ]);
+        setTodayRecord(today);
+        setMonthlySummary(summary);
+      } catch (error) {
+        console.error('Failed to load attendance data:', error);
       }
     })();
   }, [user]);
 
   if (!user) return null;
 
-  const todayRecord = getTodayAttendance();
   const remainingLeaves = user.totalLeaves - usedLeaves;
-  const { year, month } = getYearMonth();
-  const monthlySummary = getMonthlySummary(year, month);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>

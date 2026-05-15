@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function setUser(u: User) {
     setUserState(u);
-    checkInToday();
+    checkInToday(u.id).catch(() => {});
   }
 
   function logout() {
