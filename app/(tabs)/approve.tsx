@@ -12,9 +12,9 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { getPendingLeaveRequests, processLeave } from '@/src/services/leaveService';
+import { getUsersByDepartment } from '@/src/services/userService';
 import { useAuth } from '@/src/contexts/AuthContext';
-import { mockUsers } from '@/src/data/user';
-import { LeaveRequest } from '@/src/types';
+import { LeaveRequest, User } from '@/src/types';
 import { formatDateKo } from '@/src/utils/dateUtils';
 
 function calcDays(start: string, end: string): number {
@@ -23,26 +23,27 @@ function calcDays(start: string, end: string): number {
   return Math.floor((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-function getUserName(userId: string): string {
-  return mockUsers.find(u => u.id === userId)?.name ?? '알 수 없음';
-}
-
-function getUserDept(userId: string): string {
-  return mockUsers.find(u => u.id === userId)?.department ?? '';
-}
-
 export default function ApproveScreen() {
   const { user } = useAuth();
   const [pending, setPending] = useState<LeaveRequest[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, User>>({});
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
       setLoading(true);
-      getPendingLeaveRequests(user.id)
-        .then(setPending)
-        .catch(() => setPending([]))
+      Promise.all([
+        getPendingLeaveRequests(user.id),
+        getUsersByDepartment(user.departmentId, user.id),
+      ])
+        .then(([leaves, deptUsers]) => {
+          setPending(leaves);
+          const map: Record<string, User> = {};
+          deptUsers.forEach(u => { map[u.id] = u; });
+          setUserMap(map);
+        })
+        .catch(() => { setPending([]); setUserMap({}); })
         .finally(() => setLoading(false));
     }, [user])
   );
@@ -109,11 +110,11 @@ export default function ApproveScreen() {
                   {/* Applicant info */}
                   <View style={styles.cardHeader}>
                     <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{getUserName(req.userId)[0]}</Text>
+                      <Text style={styles.avatarText}>{userMap[req.userId]?.name?.[0] ?? '?'}</Text>
                     </View>
                     <View style={styles.applicantInfo}>
-                      <Text style={styles.applicantName}>{getUserName(req.userId)}</Text>
-                      <Text style={styles.applicantDept}>{getUserDept(req.userId)}</Text>
+                      <Text style={styles.applicantName}>{userMap[req.userId]?.name ?? '알 수 없음'}</Text>
+                      <Text style={styles.applicantDept}>{userMap[req.userId]?.department ?? ''}</Text>
                     </View>
                     <View style={styles.daysBadge}>
                       <Text style={styles.daysText}>{days}일</Text>

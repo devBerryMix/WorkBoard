@@ -1,8 +1,12 @@
-﻿import { View, Text, StyleSheet } from 'react-native';
+﻿import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { AttendanceStatus } from '@/src/types';
+import { useState } from 'react';
+import { checkInToday } from '@/src/services/attendanceService';
 
 interface StatusBadgeProps {
   status: AttendanceStatus | null;
+  userId?: string;
+  onCheckInSuccess?: () => void;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -15,14 +19,44 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
 
 const DEFAULT_CONFIG = { label: '미출근', color: '#9A8A78', bg: '#FFFFFF' };
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
+export default function StatusBadge({ status, userId, onCheckInSuccess }: StatusBadgeProps) {
+  const [loading, setLoading] = useState(false);
   const config = status ? (STATUS_CONFIG[status] ?? DEFAULT_CONFIG) : DEFAULT_CONFIG;
+  const canCheckIn = !status && userId;
+
+  const handleCheckIn = async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      await checkInToday(userId);
+      Alert.alert('성공', '출근 처리되었습니다.');
+      onCheckInSuccess?.();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '출근 처리 중 오류가 발생했습니다.';
+      if (message.includes('Already checked in')) {
+        Alert.alert('알림', '이미 오늘 출근했습니다.');
+      } else {
+        Alert.alert('오류', message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <ActivityIndicator size="small" color="#C8A84E" />;
+  }
 
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }]}>
+    <TouchableOpacity
+      style={[styles.badge, { backgroundColor: config.bg }]}
+      onPress={canCheckIn ? handleCheckIn : undefined}
+      disabled={!canCheckIn}
+      activeOpacity={canCheckIn ? 0.7 : 1}
+    >
       <View style={[styles.dot, { backgroundColor: config.color }]} />
       <Text style={[styles.label, { color: config.color }]}>{config.label}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 

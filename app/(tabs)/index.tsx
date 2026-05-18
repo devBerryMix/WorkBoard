@@ -14,6 +14,20 @@ export default function HomeScreen() {
   const [todayRecord, setTodayRecord] = useState<Awaited<ReturnType<typeof getTodayAttendance>>>(undefined);
   const [monthlySummary, setMonthlySummary] = useState({ workDays: 0, presentDays: 0, absentDays: 0, leaveDays: 0 });
 
+  const loadAttendanceData = async () => {
+    if (!user) return;
+    try {
+      const [today, summary] = await Promise.all([
+        getTodayAttendance(user.id),
+        getMonthlySummary(user.id, year, month),
+      ]);
+      setTodayRecord(today);
+      setMonthlySummary(summary);
+    } catch (error) {
+      console.error('Failed to load attendance data:', error);
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
 
@@ -27,18 +41,7 @@ export default function HomeScreen() {
       }
     })();
 
-    (async () => {
-      try {
-        const [today, summary] = await Promise.all([
-          getTodayAttendance(user.id),
-          getMonthlySummary(user.id, year, month),
-        ]);
-        setTodayRecord(today);
-        setMonthlySummary(summary);
-      } catch (error) {
-        console.error('Failed to load attendance data:', error);
-      }
-    })();
+    loadAttendanceData();
   }, [user]);
 
   if (!user) return null;
@@ -63,7 +66,11 @@ export default function HomeScreen() {
           {/* Work Status Card */}
           <View style={styles.card}>
             <Text style={styles.cardLabel}>오늘 근무 상태</Text>
-            <StatusBadge status={todayRecord?.status ?? null} />
+            <StatusBadge
+              status={todayRecord?.status ?? null}
+              userId={user.id}
+              onCheckInSuccess={loadAttendanceData}
+            />
           </View>
 
           {/* Monthly Summary Card */}
