@@ -17,8 +17,9 @@ export async function login(email: string, password: string): Promise<User> {
 
     return data.user as User;
   } catch (error) {
-    if (error instanceof Error && error.message === 'Invalid email or password') {
-      throw new Error('INVALID_CREDENTIALS');
+    if (error instanceof Error) {
+      if (error.message === 'Invalid email or password') throw new Error('INVALID_CREDENTIALS');
+      if (error.message === 'NETWORK_TIMEOUT') throw new Error('NETWORK_TIMEOUT');
     }
     throw error;
   }

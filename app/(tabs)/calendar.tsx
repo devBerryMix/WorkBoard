@@ -578,6 +578,7 @@ const styles = StyleSheet.create({
   deptTabsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     paddingHorizontal: 16,
     gap: 8,
   },

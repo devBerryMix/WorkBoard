@@ -1,12 +1,36 @@
 // Backend API Configuration
-// Android emulator: use 10.0.2.2 instead of localhost
-// iOS simulator & Web: use localhost
+// - Android emulator: 10.0.2.2 maps to host machine's localhost
+// - Physical device via Expo Go: extract host IP from Expo's metro server URI
+// - iOS simulator / Web fallback: localhost
 
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-const API_BASE_URL = Platform.OS === 'android'
-  ? 'http://10.0.2.2:3000'
-  : 'http://localhost:3000';
+function getBaseUrl(): string {
+  // Prioritize Expo Go's metro server URI — works for both emulator and real device
+  const hostUri =
+    Constants.expoConfig?.hostUri ??
+    (Constants as any).manifest?.debuggerHost ??
+    (Constants as any).manifest2?.extra?.expoGo?.debuggerHost;
+
+  if (hostUri) {
+    const host = (hostUri as string).split(':')[0];
+    console.log('[API] Resolved base URL host:', host);
+    return `http://${host}:3000`;
+  }
+
+  // Fallback: Android emulator when hostUri is unavailable
+  if (Platform.OS === 'android') {
+    console.log('[API] Falling back to Android emulator address');
+    return 'http://10.0.2.2:3000';
+  }
+
+  console.log('[API] Falling back to localhost');
+  return 'http://localhost:3000';
+}
+
+const API_BASE_URL = getBaseUrl();
+console.log('[API] BASE_URL:', API_BASE_URL);
 
 export const API_CONFIG = {
   BASE_URL: API_BASE_URL,
@@ -50,19 +74,30 @@ export async function fetchAPI(
   url: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    ...options,
-  };
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
 
-  const response = await fetch(url, defaultOptions);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      ...options,
+      signal: controller.signal,
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `API Error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `API Error: ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('NETWORK_TIMEOUT');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return response;
 }

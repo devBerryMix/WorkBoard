@@ -35,8 +35,12 @@ export default function LoginScreen() {
     try {
       const user = await login(email.trim(), password);
       setUser(user);
-    } catch {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+    } catch (err) {
+      if (err instanceof Error && err.message === 'NETWORK_TIMEOUT') {
+        setError('서버에 연결할 수 없습니다. 네트워크를 확인해주세요.');
+      } else {
+        setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
     } finally {
       setLoading(false);
     }
